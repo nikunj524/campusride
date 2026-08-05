@@ -1,17 +1,37 @@
-import { useState } from 'react'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { AuthProvider } from './context/AuthProvider'
+import Footer from './components/Footer'
+import Navbar from './components/Navbar'
+import ProtectedRoute from './components/ProtectedRoute'
+import DashboardPage from './pages/DashboardPage'
+import LandingPage from './pages/LandingPage'
+import LoginPage from './pages/LoginPage'
+import ProfilePage from './pages/ProfilePage'
+import RegisterPage from './pages/RegisterPage'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <h1 className="text-5xl font-bold text-blue-600">
-          CampusRide
-        </h1>
-      </div>
-    </>
+    <BrowserRouter>
+      <AuthProvider>
+        <div className="app-shell">
+          <Navbar />
+          <main className="page-content">
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route element={<ProtectedRoute />}>
+                <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
+              </Route>
+              <Route path="*" element={<LandingPage />} />
+            </Routes>
+          </main>
+          <Footer />
+        </div>
+      </AuthProvider>
+    </BrowserRouter>
   )
 }
 

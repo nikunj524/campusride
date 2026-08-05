@@ -44,6 +44,13 @@ Create the following environment variables before running the project.
 |----------|-------------|
 | DB_USERNAME | MySQL Username |
 | DB_PASSWORD | MySQL Password |
+| JWT_SECRET | Base64-encoded secret of at least 32 bytes, used to sign authentication tokens |
+
+Example PowerShell command for local development:
+
+```powershell
+$env:JWT_SECRET = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes("replace-with-a-long-random-development-secret"))
+```
 
 ---
 
@@ -52,6 +59,20 @@ Create the following environment variables before running the project.
 1. Eureka Server
 2. API Gateway
 3. Auth Service
+
+---
+
+## Auth API
+
+The Auth Service runs at `http://localhost:8081`.
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/auth/register` | Creates a Student or Driver account and returns a JWT |
+| POST | `/auth/login` | Authenticates a user and returns a JWT |
+| GET | `/auth/profile` | Returns the authenticated user's profile; requires `Authorization: Bearer <token>` |
+
+The React frontend runs at `http://localhost:5173` and connects directly to the Auth Service by default. Set `VITE_AUTH_API_URL` only when using a different Auth Service URL.
 
 ---
 
