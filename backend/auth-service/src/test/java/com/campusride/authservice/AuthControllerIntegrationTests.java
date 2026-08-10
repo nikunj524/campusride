@@ -21,7 +21,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(properties = "app.jwt.secret=Y2FtcHVzcmlkZS1hdXRoLXNlcnZpY2UtdGVzdC1zZWNyZXQta2V5LTIwMjY=")
+@SpringBootTest
 @AutoConfigureMockMvc
 class AuthControllerIntegrationTests {
 
