@@ -39,6 +39,16 @@ public class GlobalExceptionHandler {
         return response(HttpStatus.FORBIDDEN, exception.getMessage(), Map.of());
     }
 
+    @ExceptionHandler(MailSendingException.class)
+    public ResponseEntity<ApiError> handleMailSending(MailSendingException exception) {
+        return response(HttpStatus.BAD_GATEWAY, exception.getMessage(), Map.of());
+    }
+
+    @ExceptionHandler({InvalidPasswordResetOtpException.class, PasswordResetNotVerifiedException.class})
+    public ResponseEntity<ApiError> handlePasswordReset(RuntimeException exception) {
+        return response(HttpStatus.BAD_REQUEST, exception.getMessage(), Map.of());
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleUnexpected(Exception exception) {
         return response(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred", Map.of());

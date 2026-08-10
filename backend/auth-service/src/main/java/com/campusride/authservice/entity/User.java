@@ -49,7 +49,33 @@ public class User {
     @Column(nullable = false, length = 20)
     private Role role;
 
+    @Column(length = 100)
+    private String passwordResetOtpHash;
+
+    private LocalDateTime passwordResetOtpExpiresAt;
+
+    private LocalDateTime passwordResetVerifiedUntil;
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    public void beginPasswordReset(String otpHash, LocalDateTime otpExpiresAt) {
+        this.passwordResetOtpHash = otpHash;
+        this.passwordResetOtpExpiresAt = otpExpiresAt;
+        this.passwordResetVerifiedUntil = null;
+    }
+
+    public void verifyPasswordReset(LocalDateTime verifiedUntil) {
+        this.passwordResetOtpHash = null;
+        this.passwordResetOtpExpiresAt = null;
+        this.passwordResetVerifiedUntil = verifiedUntil;
+    }
+
+    public void updatePasswordAfterReset(String encodedPassword) {
+        this.password = encodedPassword;
+        this.passwordResetOtpHash = null;
+        this.passwordResetOtpExpiresAt = null;
+        this.passwordResetVerifiedUntil = null;
+    }
 }

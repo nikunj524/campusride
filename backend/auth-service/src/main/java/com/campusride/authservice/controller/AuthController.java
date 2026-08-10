@@ -2,8 +2,12 @@ package com.campusride.authservice.controller;
 
 import com.campusride.authservice.dto.AuthenticationRequest;
 import com.campusride.authservice.dto.AuthenticationResponse;
+import com.campusride.authservice.dto.ForgotPasswordRequest;
+import com.campusride.authservice.dto.MessageResponse;
 import com.campusride.authservice.dto.RegisterRequest;
+import com.campusride.authservice.dto.ResetPasswordRequest;
 import com.campusride.authservice.dto.UserProfileResponse;
+import com.campusride.authservice.dto.VerifyPasswordResetOtpRequest;
 import com.campusride.authservice.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -33,6 +37,26 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthenticationResponse> login(@Valid @RequestBody AuthenticationRequest request) {
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<MessageResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        authService.requestPasswordReset(request);
+        return ResponseEntity.ok(new MessageResponse(
+                "If an account exists for this email, a password reset OTP has been sent"
+        ));
+    }
+
+    @PostMapping("/verify-reset-otp")
+    public ResponseEntity<MessageResponse> verifyResetOtp(@Valid @RequestBody VerifyPasswordResetOtpRequest request) {
+        authService.verifyPasswordResetOtp(request);
+        return ResponseEntity.ok(new MessageResponse("OTP verified successfully"));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<MessageResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        authService.resetPassword(request);
+        return ResponseEntity.ok(new MessageResponse("Password reset successfully"));
     }
 
     @GetMapping("/profile")

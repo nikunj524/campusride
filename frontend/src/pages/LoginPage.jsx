@@ -33,6 +33,7 @@ function LoginPage() {
         {error && <p className="form-error">{error}</p>}
         <label className="field">Email<input type="email" required value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} /></label>
         <label className="field">Password<input type="password" required value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} /></label>
+        <Link className="form-link" to="/forgot-password">Forgot Password?</Link>
         <button className="button button-primary" disabled={submitting}>{submitting ? 'Signing in…' : 'Sign in'}</button>
       </form>
       <p className="muted">New to CampusRide? <Link className="nav-link" to="/register">Create an account</Link></p>
