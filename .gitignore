@@ -1,0 +1,40 @@
+# =========================
+# Node.js
+# =========================
+node_modules/
+dist/
+.vite/
+
+# =========================
+# Java / Maven
+# =========================
+target/
+*.class
+*.jar
+*.war
+*.log
+
+# =========================
+# IDE
+# =========================
+.vscode/
+.idea/
+*.iml
+
+# =========================
+# OS Files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Environment Variables
+# =========================
+.env
+.env.*
+
+# =========================
+# Spring Boot
+# =========================
+application-local.properties
+application-dev.properties
