@@ -3,8 +3,8 @@ import { ArrowRight, CalendarDays, CarFront, MapPin, UserRound } from 'lucide-re
 import useAuth from '../hooks/useAuth'
 
 const quickActions = [
-  { title: 'Find a ride', copy: 'Search for rides going to your campus.', icon: MapPin, tone: 'blue', action: 'Find rides' },
-  { title: 'My bookings', copy: 'Your upcoming and past bookings will appear here.', icon: CalendarDays, tone: 'gold', action: 'View bookings' },
+  { title: 'Find a ride', copy: 'Search for rides going to your campus.', icon: MapPin, tone: 'blue', action: 'Find rides', to: '/rides/find' },
+  { title: 'My bookings', copy: 'View and manage your upcoming and past bookings.', icon: CalendarDays, tone: 'gold', action: 'View bookings', to: '/rides/my' },
   { title: 'Profile', copy: 'Keep your CampusRide account details up to date.', icon: UserRound, tone: 'violet', action: 'View profile', to: '/profile' },
 ]
 
@@ -27,12 +27,12 @@ function DashboardPage() {
       <div className="quick-actions-grid">
         {quickActions.map(({ title, copy, icon: Icon, tone, action, to }) => <article className={`quick-action-card quick-${tone}`} key={title}>
           <span className="quick-action-icon"><Icon size={23} /></span><h3>{title}</h3><p>{copy}</p>
-          {to ? <Link className="quick-action-link" to={to}>{action} <ArrowRight size={14} /></Link> : <span className="quick-action-link is-coming">{action} <ArrowRight size={14} /></span>}
+          <Link className="quick-action-link" to={to}>{action} <ArrowRight size={14} /></Link>
         </article>)}
       </div>
       <div className="dashboard-empty-grid">
-        <article className="empty-state-card"><div className="empty-icon"><CarFront size={25} /></div><div><h2>No rides available yet.</h2><p>Ride listings will appear here once the Ride Service is available.</p></div><span className="empty-action">Find a Ride <ArrowRight size={15} /></span></article>
-        <article className="empty-state-card"><div className="empty-icon"><CalendarDays size={24} /></div><div><h2>Your bookings will appear here.</h2><p>When booking becomes available, you will be able to manage your trips in one place.</p></div><span className="empty-action">My Bookings <ArrowRight size={15} /></span></article>
+        <Link to="/rides/find" className="empty-state-card"><div className="empty-icon"><CarFront size={25} /></div><div><h2>Find available rides.</h2><p>Browse and book rides offered by fellow students going to your destination.</p></div><span className="empty-action">Find a Ride <ArrowRight size={15} /></span></Link>
+        <Link to="/rides/my" className="empty-state-card"><div className="empty-icon"><CalendarDays size={24} /></div><div><h2>Manage your bookings.</h2><p>View your upcoming trips, track ride status, and manage your travel plans.</p></div><span className="empty-action">My Bookings <ArrowRight size={15} /></span></Link>
       </div>
     </section>
   )

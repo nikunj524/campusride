@@ -21,4 +21,6 @@ const api = createApiClient(import.meta.env.VITE_AUTH_API_URL || 'http://localho
 
 export const userApi = createApiClient(import.meta.env.VITE_USER_API_URL || 'http://localhost:8082')
 
+export const rideApi = createApiClient(import.meta.env.VITE_RIDE_API_URL || 'http://localhost:8083')
+
 export default api

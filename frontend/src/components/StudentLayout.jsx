@@ -18,8 +18,8 @@ import useAuth from '../hooks/useAuth'
 
 const navigation = [
   { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
-  { label: 'Find Rides', icon: Search, disabled: true },
-  { label: 'My Bookings', icon: CalendarDays, disabled: true },
+  { label: 'Find Rides', to: '/rides/find', icon: Search },
+  { label: 'My Bookings', to: '/rides/my', icon: CalendarDays },
   { label: 'Profile', to: '/profile', icon: UserRound },
 ]
 
