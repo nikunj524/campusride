@@ -33,6 +33,8 @@ CampusRide is a Spring Boot Microservices based ride-sharing platform developed 
 - Eureka Server
 - API Gateway
 - Auth Service
+- User Service
+- Ride Service
 
 ---
 
@@ -59,6 +61,8 @@ $env:JWT_SECRET = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes("repl
 1. Eureka Server
 2. API Gateway
 3. Auth Service
+4. User Service
+5. Ride Service
 
 ---
 
@@ -73,6 +77,24 @@ The Auth Service runs at `http://localhost:8081`.
 | GET | `/auth/profile` | Returns the authenticated user's profile; requires `Authorization: Bearer <token>` |
 
 The React frontend runs at `http://localhost:5173` and connects directly to the Auth Service by default. Set `VITE_AUTH_API_URL` only when using a different Auth Service URL.
+
+---
+
+## Ride API
+
+The Ride Service runs at `http://localhost:8083`.
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/rides` | Create a new ride |
+| GET | `/api/rides/{id}` | Get ride details |
+| POST | `/api/rides/search` | Search available rides |
+| PATCH | `/api/rides/{id}/accept` | Accept a ride |
+| PATCH | `/api/rides/{id}/start` | Start a ride |
+| PATCH | `/api/rides/{id}/complete` | Complete a ride |
+| PATCH | `/api/rides/{id}/cancel` | Cancel a ride |
+| GET | `/api/rides/driver/{driverId}` | Get all rides for a driver |
+| GET | `/api/rides/passenger/{passengerId}` | Get all rides for a passenger |
 
 ---
 
