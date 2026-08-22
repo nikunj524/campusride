@@ -51,12 +51,22 @@ function StudentLayout() {
 }
 
 function StudentSidebar({ isOpen, onNavigate }) {
-  const { logout } = useAuth()
+  const { canSwitchToDriver, logout, switchToDriverWorkspace } = useAuth()
   const navigate = useNavigate()
 
   const handleLogout = () => {
     logout()
     navigate('/')
+  }
+
+  const handleSwitchToDriver = async () => {
+    try {
+      await switchToDriverWorkspace()
+      navigate('/dashboard', { replace: true })
+      onNavigate()
+    } catch {
+      return
+    }
   }
 
   return (
@@ -70,7 +80,15 @@ function StudentSidebar({ isOpen, onNavigate }) {
         ))}
       </nav>
       <div className="sidebar-divider" />
-      <button className="sidebar-link sidebar-placeholder" title="Driver mode will be available soon" type="button"><Shuffle size={18} />Switch to Driver</button>
+      {canSwitchToDriver && <button
+        className="sidebar-link"
+        onClick={handleSwitchToDriver}
+        title="Switch to driver workspace"
+        type="button"
+      >
+        <Shuffle size={18} />
+        Switch to Driver
+      </button>}
       <div className="sidebar-bottom">
         <button className="sidebar-link sidebar-placeholder" title="Settings will be available soon" type="button"><Settings size={18} />Settings</button>
         <button className="sidebar-link" onClick={handleLogout} type="button"><LogOut size={18} />Logout</button>

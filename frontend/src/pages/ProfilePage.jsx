@@ -19,6 +19,9 @@ function ProfilePage() {
   const [form, setForm] = useState({ firstName: '', lastName: '', phoneNumber: '' })
   const [isEditing, setIsEditing] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [driverRequest, setDriverRequest] = useState(null)
+  const [isRequestFormOpen, setIsRequestFormOpen] = useState(false)
+  const [isRequestSubmitting, setIsRequestSubmitting] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -34,6 +37,9 @@ function ProfilePage() {
         if (!isActive) return
         setProfile(data)
         setForm(toEditableForm(data))
+        const { data: request } = await userApi.get('/api/driver-requests/me')
+        if (!isActive) return
+        setDriverRequest(request)
       } catch (requestError) {
         if (isActive) setError(requestError.response?.data?.message || 'We could not load your profile. Please try again.')
       } finally {
@@ -85,11 +91,29 @@ function ProfilePage() {
     }
   }
 
+  const submitDriverRequest = async () => {
+    setError('')
+    setSuccess('')
+    setIsRequestSubmitting(true)
+    try {
+      const { data } = await userApi.post('/api/driver-requests')
+      setDriverRequest(data)
+      setIsRequestFormOpen(false)
+      setSuccess('Your driver request has been submitted for admin review.')
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || 'Your driver request could not be submitted. Please try again.')
+    } finally {
+      setIsRequestSubmitting(false)
+    }
+  }
+
   if (isLoading) return <ProfileState icon={LoaderCircle} message="Loading your profile..." spinning />
 
   if (!profile) return <ProfileState icon={UserRound} message={error || 'Your profile is unavailable right now.'} error />
 
   const roleLabel = profile.role ? `${profile.role.charAt(0)}${profile.role.slice(1).toLowerCase()}` : 'Student'
+  const isStudent = profile.role === 'STUDENT'
+  const isDriverApproved = Boolean(profile.driverEligible || driverRequest?.status === 'APPROVED')
 
   return (
     <section className="bg-[#f6f9ff] px-1 py-1 sm:px-2 sm:py-2">
@@ -120,9 +144,42 @@ function ProfilePage() {
             </form>
           ) : <ProfileInformation profile={profile} roleLabel={roleLabel} />}
         </article>
+        {isStudent && <DriverApplication
+          driverRequest={driverRequest}
+          isApproved={isDriverApproved}
+          isFormOpen={isRequestFormOpen}
+          isSubmitting={isRequestSubmitting}
+          onCancel={() => setIsRequestFormOpen(false)}
+          onOpen={() => setIsRequestFormOpen(true)}
+          onSubmit={submitDriverRequest}
+        />}
       </div>
     </section>
   )
+}
+
+function DriverApplication({ driverRequest, isApproved, isFormOpen, isSubmitting, onCancel, onOpen, onSubmit }) {
+  if (isApproved) {
+    return <DriverApplicationCard title="Driver Status" status="Approved"><p className="mt-2 text-sm text-[#53637f]">You can now switch to Driver from the sidebar.</p></DriverApplicationCard>
+  }
+
+  if (driverRequest?.status === 'PENDING') {
+    return <DriverApplicationCard title="Driver Application" status="Pending"><p className="mt-2 text-sm text-[#53637f]">Your request is waiting for admin approval.</p></DriverApplicationCard>
+  }
+
+  if (driverRequest?.status === 'REJECTED') {
+    return <DriverApplicationCard title="Driver Application" status="Rejected"><p className="mt-2 text-sm text-[#53637f]">You can submit a new request for review.</p><button className="mt-4 inline-flex items-center justify-center rounded-lg bg-[#2563eb] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#164bc7]" onClick={onOpen} type="button">Become a Driver</button>{isFormOpen && <DriverRequestConfirmation isSubmitting={isSubmitting} onCancel={onCancel} onSubmit={onSubmit} />}</DriverApplicationCard>
+  }
+
+  return <DriverApplicationCard title="Become a Driver" status={null}><p className="mt-2 text-sm text-[#53637f]">Request approval to use Driver mode and manage a vehicle on CampusRide.</p>{isFormOpen ? <DriverRequestConfirmation isSubmitting={isSubmitting} onCancel={onCancel} onSubmit={onSubmit} /> : <button className="mt-4 inline-flex items-center justify-center rounded-lg bg-[#2563eb] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#164bc7]" onClick={onOpen} type="button">Become a Driver</button>}</DriverApplicationCard>
+}
+
+function DriverApplicationCard({ children, title, status }) {
+  return <section className="mt-6 rounded-2xl border border-[#e0e9f7] bg-white p-5 shadow-[0_10px_28px_rgba(31,61,111,0.06)] sm:p-7"><div className="flex flex-wrap items-center justify-between gap-3"><h2 className="m-0 text-lg font-bold tracking-[-0.02em] text-[#14244c]">{title}</h2>{status && <span className="rounded-full bg-[#eef5ff] px-3 py-1 text-xs font-bold uppercase tracking-[0.04em] text-[#2563eb]">Status: {status}</span>}</div>{children}</section>
+}
+
+function DriverRequestConfirmation({ isSubmitting, onCancel, onSubmit }) {
+  return <div className="mt-5 rounded-xl border border-[#e2e9f4] bg-[#f8fbff] p-4"><p className="m-0 text-sm font-medium text-[#304260]">Submit a request to become a Driver?</p><div className="mt-4 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end"><button className="rounded-lg border border-[#cdd9eb] bg-white px-4 py-2.5 text-sm font-bold text-[#273a60]" disabled={isSubmitting} onClick={onCancel} type="button">Cancel</button><button className="rounded-lg bg-[#2563eb] px-4 py-2.5 text-sm font-bold text-white disabled:opacity-60" disabled={isSubmitting} onClick={onSubmit} type="button">{isSubmitting ? 'Submitting...' : 'Submit request'}</button></div></div>
 }
 
 function ProfileInformation({ profile, roleLabel }) {

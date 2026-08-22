@@ -44,7 +44,9 @@ public class ProfileServiceImpl implements ProfileService {
                 user.getLastName(),
                 user.getEmail(),
                 user.getPhoneNumber(),
-                user.getRole()
+                user.getRole(),
+                user.isDriverEligible(),
+                user.getCreatedAt()
         );
     }
 }

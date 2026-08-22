@@ -1,6 +1,7 @@
 package com.campusride.authservice.security;
 
 import com.campusride.authservice.entity.User;
+import com.campusride.authservice.enums.Role;
 import com.campusride.authservice.repository.UserRepository;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
@@ -56,12 +57,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (!jwtUtil.isTokenValid(token, user.getEmail())) {
             return;
         }
+        Role activeRole = jwtUtil.extractActiveRole(token);
+        Role authenticationRole = user.getRole() == Role.ADMIN
+                ? Role.ADMIN
+                : isAllowedActiveRole(user, activeRole) ? activeRole : user.getRole();
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                 user.getEmail(),
                 null,
-                List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
+                List.of(new SimpleGrantedAuthority("ROLE_" + authenticationRole.name()))
         );
         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
+
+    private boolean isAllowedActiveRole(User user, Role activeRole) {
+        return activeRole == Role.STUDENT
+                || (activeRole == Role.DRIVER
+                && (user.getRole() == Role.DRIVER || Boolean.TRUE.equals(user.getDriverEligible())));
     }
 }

@@ -2,25 +2,35 @@ import { Link } from 'react-router-dom'
 import { ArrowRight, CalendarDays, CarFront, MapPin, UserRound } from 'lucide-react'
 import useAuth from '../hooks/useAuth'
 
-const quickActions = [
+const studentQuickActions = [
   { title: 'Find a ride', copy: 'Search for rides going to your campus.', icon: MapPin, tone: 'blue', action: 'Find rides' },
   { title: 'My bookings', copy: 'Your upcoming and past bookings will appear here.', icon: CalendarDays, tone: 'gold', action: 'View bookings' },
   { title: 'Profile', copy: 'Keep your CampusRide account details up to date.', icon: UserRound, tone: 'violet', action: 'View profile', to: '/profile' },
 ]
 
+const driverQuickActions = [
+  { title: 'My vehicle', copy: 'Register and manage the vehicle you use for campus rides.', icon: CarFront, tone: 'blue', action: 'Manage vehicle', to: '/vehicles' },
+  { title: 'Profile', copy: 'Update your account details and contact information.', icon: UserRound, tone: 'violet', action: 'View profile', to: '/profile' },
+  { title: 'Find riders', copy: 'Ride listings will appear here once the ride flow is enabled.', icon: MapPin, tone: 'gold', action: 'Coming soon' },
+]
+
 function DashboardPage() {
-  const { user } = useAuth()
-  const firstName = user?.firstName || 'Student'
+  const { user, isDriverWorkspace } = useAuth()
+  const isAdmin = user?.role === 'ADMIN'
+  const isDriver = !isAdmin && isDriverWorkspace
+  const roleLabel = isAdmin ? 'Admin' : isDriver ? 'Driver' : 'Student'
+  const firstName = user?.firstName || roleLabel
+  const quickActions = isDriver ? driverQuickActions : studentQuickActions
 
   return (
     <section className="dashboard-page">
       <div className="dashboard-welcome">
-        <div><p className="section-kicker">Student dashboard</p><h1>Welcome back, {firstName}!</h1><p>Here is what is happening with your campus travel.</p></div>
+        <div><p className="section-kicker">{roleLabel} dashboard</p><h1>Welcome back, {firstName}!</h1><p>{isAdmin ? 'Manage CampusRide operations from your admin workspace.' : isDriver ? 'Manage your vehicle and keep your driver profile ready for campus trips.' : 'Here is what is happening with your campus travel.'}</p></div>
         <Link className="button button-primary" to="/profile">View profile <ArrowRight size={16} /></Link>
       </div>
       <div className="account-overview">
         <OverviewCard label="Signed in as" value={`${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'CampusRide member'} />
-        <OverviewCard label="Account role" value="Student" />
+        <OverviewCard label="Account role" value={roleLabel} />
         <OverviewCard label="Account email" value={user?.email || 'Not available'} />
       </div>
       <div className="dashboard-section-heading"><h2>Quick actions</h2><p>Shortcuts for the tools you use most.</p></div>

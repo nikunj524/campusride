@@ -7,12 +7,15 @@ import com.campusride.authservice.dto.RegisterRequest;
 import com.campusride.authservice.dto.ResetPasswordRequest;
 import com.campusride.authservice.dto.UserProfileResponse;
 import com.campusride.authservice.dto.VerifyPasswordResetOtpRequest;
+import com.campusride.authservice.dto.WorkspaceSwitchRequest;
 
 public interface AuthService {
 
     AuthenticationResponse register(RegisterRequest request);
 
     AuthenticationResponse login(AuthenticationRequest request);
+
+    AuthenticationResponse switchWorkspace(String email, WorkspaceSwitchRequest request);
 
     UserProfileResponse getProfile(String email);
 

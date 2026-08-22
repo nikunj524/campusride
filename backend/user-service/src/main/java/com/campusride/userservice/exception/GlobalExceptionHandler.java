@@ -2,6 +2,8 @@ package com.campusride.userservice.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -17,6 +19,41 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ApiError> handleUserNotFound(UserNotFoundException exception) {
         return response(HttpStatus.NOT_FOUND, exception.getMessage(), Map.of());
+    }
+
+    @ExceptionHandler(DriverRequestNotFoundException.class)
+    public ResponseEntity<ApiError> handleDriverRequestNotFound(DriverRequestNotFoundException exception) {
+        return response(HttpStatus.NOT_FOUND, exception.getMessage(), Map.of());
+    }
+
+    @ExceptionHandler(DriverRequestConflictException.class)
+    public ResponseEntity<ApiError> handleDriverRequestConflict(DriverRequestConflictException exception) {
+        return response(HttpStatus.CONFLICT, exception.getMessage(), Map.of());
+    }
+
+    @ExceptionHandler(VehicleNotFoundException.class)
+    public ResponseEntity<ApiError> handleVehicleNotFound(VehicleNotFoundException exception) {
+        return response(HttpStatus.NOT_FOUND, exception.getMessage(), Map.of());
+    }
+
+    @ExceptionHandler(VehicleAlreadyRegisteredException.class)
+    public ResponseEntity<ApiError> handleVehicleAlreadyRegistered(VehicleAlreadyRegisteredException exception) {
+        return response(HttpStatus.CONFLICT, exception.getMessage(), Map.of());
+    }
+
+    @ExceptionHandler(VehicleNumberAlreadyExistsException.class)
+    public ResponseEntity<ApiError> handleVehicleNumberAlreadyExists(VehicleNumberAlreadyExistsException exception) {
+        return response(HttpStatus.CONFLICT, exception.getMessage(), Map.of());
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiError> handleAccessDenied(AccessDeniedException exception) {
+        return response(HttpStatus.FORBIDDEN, exception.getMessage() == null ? "Access denied" : exception.getMessage(), Map.of());
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiError> handleDataIntegrityViolation(DataIntegrityViolationException exception) {
+        return response(HttpStatus.CONFLICT, "Duplicate record exists", Map.of());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
