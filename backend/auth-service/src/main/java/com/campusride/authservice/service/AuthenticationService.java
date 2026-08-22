@@ -7,6 +7,7 @@ import com.campusride.authservice.dto.RegisterRequest;
 import com.campusride.authservice.dto.ResetPasswordRequest;
 import com.campusride.authservice.dto.UserProfileResponse;
 import com.campusride.authservice.dto.VerifyPasswordResetOtpRequest;
+import com.campusride.authservice.dto.WorkspaceSwitchRequest;
 import com.campusride.authservice.entity.User;
 import com.campusride.authservice.enums.Role;
 import com.campusride.authservice.exception.DuplicateEmailException;
@@ -18,6 +19,7 @@ import com.campusride.authservice.exception.UserNotFoundException;
 import com.campusride.authservice.repository.UserRepository;
 import com.campusride.authservice.security.JwtUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -68,6 +70,7 @@ public class AuthenticationService implements AuthService {
                 .password(passwordEncoder.encode(request.password()))
                 .phoneNumber(request.phoneNumber().trim())
                 .role(request.role())
+                .driverEligible(request.role() == Role.DRIVER)
                 .build();
 
         User savedUser = userRepository.save(user);
@@ -82,7 +85,22 @@ public class AuthenticationService implements AuthService {
         if (!passwordEncoder.matches(request.password(), user.getPassword())) {
             throw new InvalidCredentialsException();
         }
-        return authenticationResponse(user);
+        return authenticationResponse(user, user.getRole() == Role.DRIVER ? Role.DRIVER : Role.STUDENT);
+    }
+
+    @Override
+    public AuthenticationResponse switchWorkspace(String email, WorkspaceSwitchRequest request) {
+        User user = userRepository.findByEmail(normalizeEmail(email))
+                .orElseThrow(UserNotFoundException::new);
+        Role activeRole = request.mode();
+
+        if (activeRole == Role.STUDENT) {
+            return authenticationResponse(user, activeRole);
+        }
+        if (activeRole == Role.DRIVER && isDriverEligible(user)) {
+            return authenticationResponse(user, activeRole);
+        }
+        throw new AccessDeniedException("Driver mode is not enabled for this account");
     }
 
     @Override
@@ -134,7 +152,18 @@ public class AuthenticationService implements AuthService {
     }
 
     private AuthenticationResponse authenticationResponse(User user) {
-        return new AuthenticationResponse(jwtUtil.generateToken(user.getEmail()), "Bearer", toProfile(user));
+        return authenticationResponse(user, user.getRole() == Role.DRIVER ? Role.DRIVER : Role.STUDENT);
+    }
+
+    private AuthenticationResponse authenticationResponse(User user, Role activeRole) {
+        boolean driverEligible = isDriverEligible(user);
+        return new AuthenticationResponse(
+                jwtUtil.generateToken(user.getEmail(), activeRole, driverEligible),
+                "Bearer",
+                toProfile(user),
+                activeRole,
+                driverEligible
+        );
     }
 
     private UserProfileResponse toProfile(User user) {
@@ -145,8 +174,13 @@ public class AuthenticationService implements AuthService {
                 user.getEmail(),
                 user.getPhoneNumber(),
                 user.getRole(),
+                user.getDriverEligible(),
                 user.getCreatedAt()
         );
+    }
+
+    private boolean isDriverEligible(User user) {
+        return user.getRole() == Role.DRIVER || Boolean.TRUE.equals(user.getDriverEligible());
     }
 
     private String normalizeEmail(String email) {

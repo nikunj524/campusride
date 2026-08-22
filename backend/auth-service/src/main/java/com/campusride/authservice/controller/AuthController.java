@@ -8,6 +8,7 @@ import com.campusride.authservice.dto.RegisterRequest;
 import com.campusride.authservice.dto.ResetPasswordRequest;
 import com.campusride.authservice.dto.UserProfileResponse;
 import com.campusride.authservice.dto.VerifyPasswordResetOtpRequest;
+import com.campusride.authservice.dto.WorkspaceSwitchRequest;
 import com.campusride.authservice.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -37,6 +38,14 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthenticationResponse> login(@Valid @RequestBody AuthenticationRequest request) {
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("/workspace")
+    public ResponseEntity<AuthenticationResponse> switchWorkspace(
+            Authentication authentication,
+            @Valid @RequestBody WorkspaceSwitchRequest request
+    ) {
+        return ResponseEntity.ok(authService.switchWorkspace(authentication.getName(), request));
     }
 
     @PostMapping("/forgot-password")

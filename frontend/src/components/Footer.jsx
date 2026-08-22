@@ -1,5 +1,5 @@
 function Footer() {
-  return <footer className="footer"><div className="container">© 2026 CampusRide · Campus travel, made simpler.</div></footer>
+  return <footer className="footer" id="contact"><div className="container footer-inner"><span>© 2026 CampusRide</span><span>Campus travel, made simpler.</span></div></footer>
 }
 
 export default Footer

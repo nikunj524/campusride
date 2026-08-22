@@ -1,5 +1,6 @@
 package com.campusride.authservice.security;
 
+import com.campusride.authservice.enums.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -24,11 +25,13 @@ public class JwtUtil {
         this.expirationMs = expirationMs;
     }
 
-    public String generateToken(String email) {
+    public String generateToken(String email, Role activeRole, boolean driverEligible) {
         Date issuedAt = new Date();
         Date expiry = new Date(issuedAt.getTime() + expirationMs);
         return Jwts.builder()
                 .subject(email)
+                .claim("activeRole", activeRole.name())
+                .claim("driverEligible", driverEligible)
                 .issuedAt(issuedAt)
                 .expiration(expiry)
                 .signWith(signingKey)
@@ -41,6 +44,11 @@ public class JwtUtil {
 
     public boolean isTokenValid(String token, String email) {
         return email.equals(extractEmail(token)) && !isTokenExpired(token);
+    }
+
+    public Role extractActiveRole(String token) {
+        Object activeRole = parseClaims(token).get("activeRole");
+        return activeRole == null ? Role.STUDENT : Role.valueOf(activeRole.toString());
     }
 
     private boolean isTokenExpired(String token) {
