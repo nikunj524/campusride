@@ -27,13 +27,20 @@ export function AuthProvider({ children }) {
     return data
   }, [])
 
+  const switchWorkspace = useCallback(async (mode) => {
+    const { data } = await api.post('/auth/switch-workspace', { mode })
+    saveSession(data)
+    return data
+  }, [saveSession])
+
   const value = useMemo(() => ({
     user,
     isAuthenticated: Boolean(user && localStorage.getItem(TOKEN_KEY)),
     saveSession,
     logout,
     refreshProfile,
-  }), [user, saveSession, logout, refreshProfile])
+    switchWorkspace,
+  }), [user, saveSession, logout, refreshProfile, switchWorkspace])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

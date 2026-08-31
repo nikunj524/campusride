@@ -63,4 +63,11 @@ public class AuthController {
     public ResponseEntity<UserProfileResponse> profile(Authentication authentication) {
         return ResponseEntity.ok(authService.getProfile(authentication.getName()));
     }
+
+    @PostMapping("/switch-workspace")
+    public ResponseEntity<AuthenticationResponse> switchWorkspace(
+            @Valid @RequestBody com.campusride.authservice.dto.WorkspaceSwitchRequest request,
+            Authentication authentication) {
+        return ResponseEntity.ok(authService.switchWorkspace(authentication.getName(), request));
+    }
 }

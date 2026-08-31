@@ -78,4 +78,8 @@ public class User {
         this.passwordResetOtpExpiresAt = null;
         this.passwordResetVerifiedUntil = null;
     }
+
+    public void switchRole(Role newRole) {
+        this.role = newRole;
+    }
 }

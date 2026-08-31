@@ -4,6 +4,7 @@ import Footer from './components/Footer'
 import Navbar from './components/Navbar'
 import ProtectedRoute from './components/ProtectedRoute'
 import StudentLayout from './components/StudentLayout'
+import DriverLayout from './components/DriverLayout'
 import CreateRidePage from './pages/CreateRidePage'
 import DashboardPage from './pages/DashboardPage'
 import FindRidesPage from './pages/FindRidesPage'
@@ -14,6 +15,7 @@ import MyRidesPage from './pages/MyRidesPage'
 import ProfilePage from './pages/ProfilePage'
 import RegisterPage from './pages/RegisterPage'
 import RideDetailsPage from './pages/RideDetailsPage'
+import VehiclePage from './pages/VehiclePage'
 import './App.css'
 
 function App() {
@@ -29,10 +31,11 @@ function App() {
 function AppContent() {
   const location = useLocation()
   const isStudentWorkspace = ['/dashboard', '/profile', '/rides/find', '/rides/create', '/rides/my'].some(path => location.pathname.startsWith(path)) || location.pathname.match(/^\/rides\/\d+$/)
+  const isDriverWorkspace = ['/driver/'].some(path => location.pathname.startsWith(path))
 
   return (
     <div className="app-shell">
-      {!isStudentWorkspace && <Navbar />}
+      {!isStudentWorkspace && !isDriverWorkspace && <Navbar />}
       <main className="page-content">
         <Routes>
           <Route path="/" element={<LandingPage />} />
@@ -48,11 +51,16 @@ function AppContent() {
               <Route path="/rides/my" element={<MyRidesPage />} />
               <Route path="/rides/:rideId" element={<RideDetailsPage />} />
             </Route>
+            <Route element={<DriverLayout />}>
+              <Route path="/driver/dashboard" element={<DashboardPage />} />
+              <Route path="/driver/profile" element={<ProfilePage />} />
+              <Route path="/driver/vehicles" element={<VehiclePage />} />
+            </Route>
           </Route>
           <Route path="*" element={<LandingPage />} />
         </Routes>
       </main>
-      {!isStudentWorkspace && <Footer />}
+      {!isStudentWorkspace && !isDriverWorkspace && <Footer />}
     </div>
   )
 }

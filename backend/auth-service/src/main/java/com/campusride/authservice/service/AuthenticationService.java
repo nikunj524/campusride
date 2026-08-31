@@ -156,4 +156,18 @@ public class AuthenticationService implements AuthService {
     private String generateOtp() {
         return String.format(Locale.ROOT, "%06d", SECURE_RANDOM.nextInt(1_000_000));
     }
+
+    @Override
+    @Transactional
+    public AuthenticationResponse switchWorkspace(String email, com.campusride.authservice.dto.WorkspaceSwitchRequest request) {
+        User user = userRepository.findByEmail(normalizeEmail(email))
+                .orElseThrow(UserNotFoundException::new);
+
+        // Update user's role
+        user.switchRole(request.mode());
+        User updatedUser = userRepository.save(user);
+
+        // Generate new token with updated role
+        return authenticationResponse(updatedUser);
+    }
 }
