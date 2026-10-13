@@ -15,8 +15,6 @@ public interface AuthService {
 
     AuthenticationResponse login(AuthenticationRequest request);
 
-    AuthenticationResponse switchWorkspace(String email, WorkspaceSwitchRequest request);
-
     UserProfileResponse getProfile(String email);
 
     void requestPasswordReset(ForgotPasswordRequest request);
@@ -24,4 +22,6 @@ public interface AuthService {
     void verifyPasswordResetOtp(VerifyPasswordResetOtpRequest request);
 
     void resetPassword(ResetPasswordRequest request);
+
+    AuthenticationResponse switchWorkspace(String email, WorkspaceSwitchRequest request);
 }

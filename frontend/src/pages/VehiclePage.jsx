@@ -206,13 +206,13 @@ function VehicleCard({ vehicle, onEdit, onRemove }) {
         <div>
           <p className="vehicle-card-kicker">Registered vehicle</p>
           <h2>{vehicle.vehicleNumber}</h2>
+          <p className="vehicle-model-subtitle">{vehicle.vehicleModel}</p>
         </div>
         <span className={`vehicle-status ${statusTone}`}>{statusLabel}</span>
       </div>
 
       <dl className="vehicle-details-grid">
-        <VehicleDetail label="Vehicle number" value={vehicle.vehicleNumber} />
-        <VehicleDetail label="Vehicle type" value={formatLabel(vehicle.vehicleType)} />
+        <VehicleDetail label="Vehicle Type" value={formatLabel(vehicle.vehicleType)} />
         <VehicleDetail label="Model" value={vehicle.vehicleModel} />
         <VehicleDetail label="Color" value={vehicle.vehicleColor} />
         <VehicleDetail label="Seats" value={String(vehicle.totalSeats)} />

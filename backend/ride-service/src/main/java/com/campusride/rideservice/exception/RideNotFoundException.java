@@ -1,0 +1,7 @@
+package com.campusride.rideservice.exception;
+
+public class RideNotFoundException extends RuntimeException {
+    public RideNotFoundException(Long rideId) {
+        super("Ride not found with id: " + rideId);
+    }
+}

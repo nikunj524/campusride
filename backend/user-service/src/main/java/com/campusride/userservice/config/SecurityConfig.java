@@ -48,6 +48,7 @@ public class SecurityConfig {
                         .accessDeniedHandler(accessDeniedHandler()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/vehicles/user/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/driver-requests").hasRole("STUDENT")
                         .requestMatchers(HttpMethod.GET, "/api/driver-requests/me").authenticated()
                         .requestMatchers("/api/admin/driver-requests/**").hasRole("ADMIN")

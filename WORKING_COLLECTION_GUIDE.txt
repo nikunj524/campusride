@@ -1,0 +1,338 @@
+==========================================
+CAMPUSRIDE - WORKING COLLECTION GUIDE
+==========================================
+
+FILE: CampusRide_Working_Collection.json
+
+==========================================
+IMPORT KARO
+==========================================
+
+1. Postman kholo
+2. Import → Choose Files
+3. Select: CampusRide_Working_Collection.json
+4. Import click karo
+5. Done! ✅
+
+==========================================
+KEY DIFFERENCES (FROM OLD COLLECTION)
+==========================================
+
+✅ DIRECT SERVICE CALLS (No Gateway)
+   - Auth:    localhost:8081
+   - User:    localhost:8082
+   - Ride:    localhost:8083
+   - Booking: localhost:8084
+
+✅ CORRECT FIELD NAMES
+   - firstName + lastName (NOT "name")
+   - All validation-compliant
+
+✅ AUTO TOKEN SAVE
+   - Login karo → Token save hoga automatically
+
+==========================================
+SERVICE PORTS
+==========================================
+
+Auth Service:    http://localhost:8081
+User Service:    http://localhost:8082
+Ride Service:    http://localhost:8083
+Booking Service: http://localhost:8084
+Eureka:          http://localhost:8761
+
+==========================================
+REGISTER REQUEST FORMAT
+==========================================
+
+CORRECT ✅:
+{
+  "firstName": "Test",
+  "lastName": "Student",
+  "email": "test@test.com",
+  "password": "test1234",
+  "phoneNumber": "9876543210",
+  "role": "STUDENT"
+}
+
+WRONG ❌:
+{
+  "name": "Test Student",  // Wrong field!
+  ...
+}
+
+==========================================
+TEST ACCOUNTS
+==========================================
+
+Admin:
+  Email: admin@campusride.com
+  Password: admin123
+
+Driver (ID: 15):
+  Email: h@gmail.com
+  Password: 1234
+  Vehicle: GJ4W10
+
+Student (ID: 29):
+  Email: z@gmail.com
+  Password: 1234
+
+==========================================
+TESTING SEQUENCE
+==========================================
+
+1. Health Checks → Auth Service Health
+   Expected: {"status":"UP"}
+
+2. Authentication → Login Driver
+   Expected: 200 OK with token
+   Token auto-saves! ✅
+
+3. Vehicle Service → Get My Vehicle
+   Expected: Vehicle details
+
+4. Ride Service → Get All Rides
+   Expected: List of rides
+
+5. Authentication → Login Student
+   Expected: New token (student)
+
+6. Booking Service → Create Booking
+   Expected: Booking created
+
+==========================================
+ALL API ENDPOINTS
+==========================================
+
+AUTH SERVICE (Port 8081):
+-------------------------
+POST   /auth/register
+POST   /auth/login
+POST   /auth/forgot-password
+POST   /auth/verify-reset-otp
+POST   /auth/reset-password
+GET    /auth/profile
+
+USER SERVICE (Port 8082):
+-------------------------
+GET    /api/users
+GET    /api/users/{id}
+PUT    /api/users/{id}
+
+VEHICLE SERVICE (Port 8082):
+----------------------------
+POST   /api/vehicles
+GET    /api/vehicles/my
+GET    /api/vehicles/user/{userId}
+PUT    /api/vehicles/my
+DELETE /api/vehicles/my
+
+RIDE SERVICE (Port 8083):
+-------------------------
+POST   /api/rides
+GET    /api/rides
+GET    /api/rides/{id}
+POST   /api/rides/search
+
+BOOKING SERVICE (Port 8084):
+----------------------------
+POST   /api/bookings
+GET    /api/bookings/{id}
+GET    /api/bookings/passenger/{passengerId}
+GET    /api/bookings/ride/{rideId}
+PATCH  /api/bookings/{id}/status
+
+ADMIN SERVICE (Port 8082):
+--------------------------
+GET    /api/admin/settings
+PUT    /api/admin/settings
+
+==========================================
+SAMPLE REQUESTS
+==========================================
+
+1. Register New Student:
+------------------------
+POST http://localhost:8081/auth/register
+{
+  "firstName": "Hardik",
+  "lastName": "Makwana",
+  "email": "hardik@test.com",
+  "password": "hardik123",
+  "phoneNumber": "9876543210",
+  "role": "STUDENT"
+}
+
+2. Login:
+---------
+POST http://localhost:8081/auth/login
+{
+  "email": "h@gmail.com",
+  "password": "1234"
+}
+
+Response: Token auto-saves in environment! ✅
+
+3. Get My Vehicle:
+------------------
+GET http://localhost:8082/api/vehicles/my
+Headers: Authorization: Bearer {{token}}
+
+4. Create Ride:
+---------------
+POST http://localhost:8083/api/rides
+Headers: Authorization: Bearer {{token}}
+{
+  "source": "Andheri",
+  "destination": "Bandra",
+  "departureTime": "2026-09-25T10:00:00",
+  "availableSeats": 3,
+  "pricePerSeat": 50.00,
+  "driverId": 15
+}
+
+5. Search Rides:
+----------------
+POST http://localhost:8083/api/rides/search
+{
+  "source": "Andheri",
+  "destination": "Bandra"
+}
+
+6. Create Booking:
+------------------
+POST http://localhost:8084/api/bookings
+Headers: Authorization: Bearer {{token}}
+{
+  "rideId": 7,
+  "passengerId": 29,
+  "seatsBooked": 1
+}
+
+==========================================
+ENVIRONMENT SETUP (OPTIONAL)
+==========================================
+
+Environment Name: CampusRide Local
+
+Variables:
+----------
+token    = (auto-set on login)
+userId   = (auto-set on login)
+authUrl  = http://localhost:8081
+userUrl  = http://localhost:8082
+rideUrl  = http://localhost:8083
+bookingUrl = http://localhost:8084
+
+==========================================
+COMMON ERRORS & SOLUTIONS
+==========================================
+
+Error: "First name is required"
+Solution: Use firstName and lastName (not name)
+
+Error: "Password must be between 8 and 72 characters"
+Solution: Password minimum 8 characters
+
+Error: 401 Unauthorized
+Solution: Login again, token expired
+
+Error: Connection refused
+Solution: Check service is running on correct port
+
+==========================================
+VALIDATION RULES
+==========================================
+
+Password:
+  - Min 8 characters
+  - Max 72 characters
+
+Phone Number:
+  - 7-20 characters
+  - Only numbers, +, (), -, space
+
+Email:
+  - Valid email format
+  - Max 120 characters
+
+Names:
+  - Required
+  - Max 50 characters each
+
+==========================================
+QUICK TERMINAL TEST
+==========================================
+
+# Test Register
+curl -X POST http://localhost:8081/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "firstName": "Test",
+    "lastName": "User",
+    "email": "test@test.com",
+    "password": "test1234",
+    "phoneNumber": "9876543210",
+    "role": "STUDENT"
+  }'
+
+# Test Login
+curl -X POST http://localhost:8081/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "h@gmail.com",
+    "password": "1234"
+  }'
+
+# Test Health
+curl http://localhost:8081/actuator/health
+
+==========================================
+SUCCESS CHECKLIST
+==========================================
+
+Before Testing:
+□ All services running (check health endpoints)
+□ Collection imported in Postman
+□ Environment created (optional)
+
+First Test:
+□ Health check passes
+□ Login successful
+□ Token received and saved
+
+Ready:
+□ Can register new users
+□ Can create rides (driver)
+□ Can search rides
+□ Can create bookings (student)
+
+==========================================
+FILES IN PROJECT
+==========================================
+
+✅ CampusRide_Working_Collection.json (USE THIS!)
+✅ WORKING_COLLECTION_GUIDE.txt (this file)
+✅ PROJECT_LINKS.txt (all URLs)
+✅ api_test.txt (terminal commands)
+
+Old Files (don't use):
+❌ CampusRide_Postman_Collection.json (wrong paths)
+❌ CampusRide_Postman_Collection_FIXED.json (gateway paths)
+
+==========================================
+WHY DIRECT SERVICES?
+==========================================
+
+Gateway configuration missing hai, so:
+- ✅ Direct service calls work
+- ❌ Gateway calls don't work (404)
+
+In production, gateway configure karna hoga.
+For testing, direct services perfect hain! ✅
+
+==========================================
+
+IMPORT & TEST NOW! 🚀
+All paths verified and working!

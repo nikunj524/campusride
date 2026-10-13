@@ -1,0 +1,367 @@
+==========================================
+CAMPUSRIDE PROJECT - ALL LINKS
+==========================================
+
+🚀 PROJECT STATUS: BACKEND RUNNING ✅
+
+==========================================
+BACKEND SERVICES (ALL UP ✅)
+==========================================
+
+1. EUREKA SERVER (Service Registry)
+   URL: http://localhost:8761
+   Status: ✅ RUNNING
+   Purpose: Service discovery and monitoring
+   Info: See all registered microservices here
+
+2. AUTH SERVICE (Authentication)
+   URL: http://localhost:8081
+   Health: http://localhost:8081/actuator/health
+   Status: ✅ RUNNING
+   Purpose: Login, Register, Password Reset
+
+3. USER SERVICE (User Management)
+   URL: http://localhost:8082
+   Health: http://localhost:8082/actuator/health
+   Status: ✅ RUNNING
+   Purpose: User profiles, Vehicles, Admin operations
+
+4. RIDE SERVICE (Ride Management)
+   URL: http://localhost:8083
+   Health: http://localhost:8083/actuator/health
+   Status: ✅ RUNNING
+   Purpose: Create rides, Search rides, Accept/Cancel
+
+5. BOOKING SERVICE (Booking Management)
+   URL: http://localhost:8084
+   Health: http://localhost:8084/actuator/health
+   Status: ✅ RUNNING
+   Purpose: Book rides, View bookings, Cancel bookings
+
+6. API GATEWAY (Main Entry Point)
+   URL: http://localhost:8080
+   Health: http://localhost:8080/actuator/health
+   Status: ✅ RUNNING
+   Purpose: Routes all API requests to microservices
+   ⭐ USE THIS URL FOR ALL API CALLS ⭐
+
+==========================================
+FRONTEND APPLICATION
+==========================================
+
+Frontend: React + Vite
+Status: ⚠️  NEEDS MANUAL START
+Port: 5173 (or 5174 if 5173 busy)
+
+HOW TO START:
+-------------
+Option 1 - Terminal:
+  cd /Users/hardikmakwana/SpringProject/campusride/frontend
+  npm run dev
+
+Option 2 - VS Code:
+  1. Open terminal in VS Code
+  2. cd frontend
+  3. npm run dev
+
+Expected URL: http://localhost:5173
+
+==========================================
+API ENDPOINTS (VIA GATEWAY)
+==========================================
+
+Base URL: http://localhost:8080
+
+AUTHENTICATION:
+---------------
+POST /auth-service/api/auth/register     - Register new user
+POST /auth-service/api/auth/login        - Login
+POST /auth-service/api/auth/forgot-password
+POST /auth-service/api/auth/verify-otp
+POST /auth-service/api/auth/reset-password
+
+USER MANAGEMENT:
+----------------
+GET  /user-service/api/users/profile     - Get logged in user
+PUT  /user-service/api/users/profile     - Update profile
+GET  /user-service/api/users             - Get all users (Admin)
+GET  /user-service/api/users/{id}        - Get user by ID
+DEL  /user-service/api/users/{id}        - Delete user (Admin)
+
+VEHICLE MANAGEMENT:
+-------------------
+POST /user-service/api/vehicles          - Add vehicle
+GET  /user-service/api/vehicles/my       - Get my vehicles
+GET  /user-service/api/vehicles/user/{userId} - Get user vehicles
+PUT  /user-service/api/vehicles/{id}     - Update vehicle
+DEL  /user-service/api/vehicles/{id}     - Delete vehicle
+
+RIDE MANAGEMENT:
+----------------
+POST /ride-service/api/rides             - Create ride
+GET  /ride-service/api/rides/search      - Search rides
+GET  /ride-service/api/rides             - Get all rides
+GET  /ride-service/api/rides/{id}        - Get ride by ID
+GET  /ride-service/api/rides/my          - Get my rides
+PUT  /ride-service/api/rides/{id}        - Update ride
+DEL  /ride-service/api/rides/{id}        - Delete ride
+POST /ride-service/api/rides/{id}/accept - Accept ride
+POST /ride-service/api/rides/{id}/cancel - Cancel ride
+
+BOOKING MANAGEMENT:
+-------------------
+POST /booking-service/api/bookings       - Create booking
+GET  /booking-service/api/bookings/my    - Get my bookings
+GET  /booking-service/api/bookings/{id}  - Get booking by ID
+GET  /booking-service/api/bookings/ride/{rideId} - Get bookings by ride
+PUT  /booking-service/api/bookings/{id}/cancel   - Cancel booking
+
+ADMIN OPERATIONS:
+-----------------
+GET  /user-service/api/admin/driver-requests  - Pending drivers
+PUT  /user-service/api/admin/approve-driver/{id}
+PUT  /user-service/api/admin/reject-driver/{id}
+GET  /user-service/api/admin/settings         - Get settings
+PUT  /user-service/api/admin/settings         - Update settings
+
+==========================================
+TEST ACCOUNTS
+==========================================
+
+ADMIN:
+  Email: admin@campusride.com
+  Password: admin123
+  Access: Full admin dashboard
+
+DRIVER:
+  Email: h@gmail.com
+  Password: 1234
+  User ID: 15
+  Vehicle: GJ4W10 (Splendor)
+  Access: Create rides, manage vehicles
+
+STUDENT:
+  Email: z@gmail.com
+  Password: 1234
+  User ID: 29
+  Name: hardik lala
+  Access: Search rides, book rides
+
+==========================================
+QUICK TEST COMMANDS
+==========================================
+
+1. Test Health (All Services):
+   curl http://localhost:8761
+
+2. Login as Driver:
+   curl -X POST http://localhost:8080/auth-service/api/auth/login \
+     -H "Content-Type: application/json" \
+     -d '{"email":"h@gmail.com","password":"1234"}'
+
+3. Search Rides:
+   curl http://localhost:8080/ride-service/api/rides/search
+
+4. Get Profile (need token from login):
+   curl -X GET http://localhost:8080/user-service/api/users/profile \
+     -H "Authorization: Bearer YOUR_TOKEN"
+
+==========================================
+POSTMAN COLLECTION
+==========================================
+
+Import File:
+  /Users/hardikmakwana/SpringProject/campusride/CampusRide_Postman_Collection.json
+
+Guide Files:
+  - HOW_TO_USE_POSTMAN_COLLECTION.txt
+  - POSTMAN_COLLECTION_GUIDE.txt
+  - API_QUICK_REFERENCE.txt
+
+Test Script:
+  - api_test.txt (all requests in sequence)
+  - test_all_apis.sh (automated bash script)
+
+==========================================
+DATABASE
+==========================================
+
+Type: MySQL
+Host: localhost
+Port: 3306
+Database: campusride
+User: root
+Password: (no password)
+
+Tables:
+  - users
+  - vehicles
+  - rides
+  - bookings
+  - admin_settings
+
+==========================================
+PROJECT STRUCTURE
+==========================================
+
+Backend Services:
+  /Users/hardikmakwana/SpringProject/campusride/backend/
+    ├── eureka-server      (Port 8761)
+    ├── auth-service       (Port 8081)
+    ├── user-service       (Port 8082)
+    ├── ride-service       (Port 8083)
+    ├── booking-service    (Port 8084)
+    └── api-gateway        (Port 8080)
+
+Frontend:
+  /Users/hardikmakwana/SpringProject/campusride/frontend/
+    - React application with Vite
+
+Documentation:
+  - PROJECT_LINKS.txt (this file)
+  - api_test.txt
+  - POSTMAN_COLLECTION_GUIDE.txt
+  - RIDE_AND_BOOKING_SERVICES_DOCUMENTATION.txt
+
+==========================================
+FEATURES AVAILABLE
+==========================================
+
+✅ User Registration & Login
+✅ JWT Token Authentication
+✅ Role-based Access (Student/Driver/Admin)
+✅ Vehicle Management (CRUD)
+✅ Ride Creation (Offering/Requesting)
+✅ Ride Search with Filters
+✅ Real-time Search
+✅ Booking Management
+✅ Driver Approval System (Admin)
+✅ Admin Dashboard
+✅ Settings Management
+✅ Password Reset with OTP
+✅ Profile Management
+✅ Responsive UI
+
+==========================================
+LOGS LOCATION
+==========================================
+
+Backend logs:
+  /tmp/eureka.log
+  /tmp/auth.log
+  /tmp/user.log
+  /tmp/ride.log
+  /tmp/booking.log
+  /tmp/gateway.log
+
+Frontend log:
+  /tmp/frontend.log
+
+View logs:
+  tail -f /tmp/eureka.log
+  tail -f /tmp/auth.log
+
+==========================================
+TROUBLESHOOTING
+==========================================
+
+Backend Services Not Running?
+  - Check: http://localhost:8761 (Eureka)
+  - Check logs in /tmp/*.log files
+  - Restart services manually
+
+Frontend Not Starting?
+  - Clear port: lsof -ti:5173 | xargs kill -9
+  - cd frontend && npm run dev
+
+Database Connection Error?
+  - Check MySQL is running: mysql -u root
+  - Check database exists: USE campusride;
+
+Token Not Working (401)?
+  - Login again, token may have expired
+  - Token validity: 24 hours
+
+Port Already in Use?
+  - Kill process: lsof -ti:PORT | xargs kill -9
+  - Example: lsof -ti:8080 | xargs kill -9
+
+==========================================
+DEVELOPMENT WORKFLOW
+==========================================
+
+1. Start Backend Services:
+   All services are currently running ✅
+
+2. Start Frontend:
+   cd frontend && npm run dev
+
+3. Access Application:
+   http://localhost:5173
+
+4. Test APIs:
+   - Use Postman collection
+   - Or curl commands from api_test.txt
+
+5. Check Logs:
+   tail -f /tmp/*.log
+
+==========================================
+PRODUCTION NOTES
+==========================================
+
+Before deploying:
+  - Change default passwords
+  - Update JWT secret
+  - Configure proper CORS
+  - Set up environment variables
+  - Enable HTTPS
+  - Set up proper logging
+  - Configure database connection pooling
+  - Set up monitoring (actuator endpoints)
+
+==========================================
+SUPPORT & DOCUMENTATION
+==========================================
+
+Main Documentation:
+  - README.md
+  - RIDE_AND_BOOKING_SERVICES_DOCUMENTATION.txt
+
+API Testing:
+  - api_test.txt (complete sequence)
+  - CampusRide_Postman_Collection.json
+
+Guides:
+  - HOW_TO_USE_POSTMAN_COLLECTION.txt
+  - POSTMAN_COLLECTION_GUIDE.txt
+  - API_QUICK_REFERENCE.txt
+
+Quick Links File:
+  - PROJECT_LINKS.txt (this file)
+
+==========================================
+CURRENT STATUS
+==========================================
+
+✅ Backend Services: ALL RUNNING
+✅ Database: Connected
+✅ API Gateway: Working
+✅ Eureka Registry: All services registered
+⚠️  Frontend: Manual start needed
+
+Next Steps:
+1. Start frontend: cd frontend && npm run dev
+2. Open browser: http://localhost:5173
+3. Test login with provided accounts
+4. Enjoy the application! 🚀
+
+==========================================
+
+All backend APIs are ready to use!
+Frontend needs manual start in terminal.
+
+For detailed API testing, see: api_test.txt
+For Postman, import: CampusRide_Postman_Collection.json
+
+Happy Coding! 🎉

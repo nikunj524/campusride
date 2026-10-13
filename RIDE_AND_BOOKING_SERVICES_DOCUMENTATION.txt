@@ -1,0 +1,582 @@
+================================================================================
+           CAMPUSRIDE - RIDE & BOOKING SERVICES DOCUMENTATION
+================================================================================
+
+Author: CampusRide Development Team
+Date: September 16, 2026
+Version: 1.0
+
+This document explains all files in Ride Service and Booking Service,
+what they do, and how they work together.
+
+================================================================================
+                          📦 RIDE SERVICE (Port: 8083)
+================================================================================
+
+Purpose: Manages ride creation, searching, and lifecycle (accept, start, complete, cancel)
+
+--------------------------------------------------------------------------------
+1. MAIN APPLICATION
+--------------------------------------------------------------------------------
+
+📄 RideServiceApplication.java
+   Path: /backend/ride-service/src/main/java/com/campusride/rideservice/RideServiceApplication.java
+   
+   - Main entry point for Ride Service
+   - Starts Spring Boot application
+   - Enables Eureka client for service discovery
+   - Runs on port 8083
+
+--------------------------------------------------------------------------------
+2. CONTROLLERS (API Endpoints)
+--------------------------------------------------------------------------------
+
+📄 RideController.java
+   Path: /backend/ride-service/src/main/java/com/campusride/rideservice/controller/RideController.java
+   
+   Purpose: Handles HTTP requests for ride operations
+   
+   Endpoints:
+   - POST   /api/rides              → Create new ride
+   - GET    /api/rides/{id}         → Get ride details by ID
+   - POST   /api/rides/search       → Search available rides
+   - PUT    /api/rides/{id}/accept  → Accept ride (for passengers)
+   - PUT    /api/rides/{id}/start   → Start ride (driver marks as started)
+   - PUT    /api/rides/{id}/complete → Complete ride
+   - PUT    /api/rides/{id}/cancel  → Cancel ride
+   - GET    /api/rides/driver/{id}  → Get all rides by driver ID
+   - GET    /api/rides/passenger/{id} → Get all rides by passenger ID
+
+--------------------------------------------------------------------------------
+3. ENTITIES (Database Models)
+--------------------------------------------------------------------------------
+
+📄 Ride.java
+   Path: /backend/ride-service/src/main/java/com/campusride/rideservice/entity/Ride.java
+   
+   Purpose: Database table model for rides
+   
+   Fields:
+   - id: Unique ride identifier
+   - driverId: ID of driver who created ride
+   - passengerId: ID of passenger who accepted ride (null if not accepted)
+   - type: OFFERING or REQUESTING
+   - source: Starting location
+   - destination: End location
+   - departureTime: When ride will start
+   - availableSeats: Number of seats available
+   - pricePerSeat: Cost per seat in rupees
+   - status: PENDING, ACCEPTED, STARTED, COMPLETED, CANCELLED
+   - notes: Additional information
+   - createdAt: When ride was created
+   
+   Business Methods:
+   - acceptRide(passengerId): Changes status to ACCEPTED, sets passenger
+   - startRide(): Changes status to STARTED
+   - completeRide(): Changes status to COMPLETED
+   - cancelRide(): Changes status to CANCELLED
+
+--------------------------------------------------------------------------------
+4. DTOs (Data Transfer Objects)
+--------------------------------------------------------------------------------
+
+📄 CreateRideRequest.java
+   Path: /backend/ride-service/src/main/java/com/campusride/rideservice/dto/CreateRideRequest.java
+   
+   Purpose: Request body for creating new ride
+   Fields: driverId, type, source, destination, departureTime, 
+           availableSeats, pricePerSeat, notes
+
+📄 RideResponse.java
+   Path: /backend/ride-service/src/main/java/com/campusride/rideservice/dto/RideResponse.java
+   
+   Purpose: Response sent to frontend with ride details
+   Fields: All ride fields + vehicleInfo (driver's vehicle details)
+
+📄 SearchRideRequest.java
+   Path: /backend/ride-service/src/main/java/com/campusride/rideservice/dto/SearchRideRequest.java
+   
+   Purpose: Request body for searching rides
+   Fields: type (OFFERING/REQUESTING), status, source, destination
+
+📄 VehicleInfo.java
+   Path: /backend/ride-service/src/main/java/com/campusride/rideservice/dto/VehicleInfo.java
+   
+   Purpose: Vehicle information embedded in RideResponse
+   Fields: vehicleNumber, vehicleType, vehicleModel, vehicleColor, totalSeats
+
+--------------------------------------------------------------------------------
+5. REPOSITORIES (Database Access)
+--------------------------------------------------------------------------------
+
+📄 RideRepository.java
+   Path: /backend/ride-service/src/main/java/com/campusride/rideservice/repository/RideRepository.java
+   
+   Purpose: Database operations for Ride entity
+   
+   Methods:
+   - findByTypeAndStatusAndDepartureTimeAfter(): Search rides by criteria
+   - findByDriverId(): Get all rides created by a driver
+   - findByPassengerId(): Get all rides booked by a passenger
+
+--------------------------------------------------------------------------------
+6. SERVICES (Business Logic)
+--------------------------------------------------------------------------------
+
+📄 RideService.java (Interface)
+   Path: /backend/ride-service/src/main/java/com/campusride/rideservice/service/RideService.java
+   
+   Purpose: Defines ride business operations
+
+📄 RideServiceImpl.java (Implementation)
+   Path: /backend/ride-service/src/main/java/com/campusride/rideservice/service/impl/RideServiceImpl.java
+   
+   Purpose: Implements all ride business logic
+   
+   Key Features:
+   - Creates rides with validation
+   - Fetches vehicle info from User Service
+   - Filters past rides (only shows future rides)
+   - Manages ride lifecycle (accept → start → complete)
+   - Validates status transitions
+   - Filters driver's own rides from search results
+
+--------------------------------------------------------------------------------
+7. CLIENT (Inter-Service Communication)
+--------------------------------------------------------------------------------
+
+📄 UserServiceClient.java
+   Path: /backend/ride-service/src/main/java/com/campusride/rideservice/client/UserServiceClient.java
+   
+   Purpose: Calls User Service to get driver's vehicle information
+   
+   Method:
+   - getDriverVehicle(driverId): Fetches vehicle details via REST API
+   - URL: http://localhost:8082/api/vehicles/user/{driverId}
+
+--------------------------------------------------------------------------------
+8. ENUMS (Constants)
+--------------------------------------------------------------------------------
+
+📄 RideType.java
+   Path: /backend/ride-service/src/main/java/com/campusride/rideservice/enums/RideType.java
+   
+   Values: OFFERING, REQUESTING
+   Purpose: Defines if ride is offered by driver or requested by passenger
+
+📄 RideStatus.java
+   Path: /backend/ride-service/src/main/java/com/campusride/rideservice/enums/RideStatus.java
+   
+   Values: PENDING, ACCEPTED, STARTED, COMPLETED, CANCELLED
+   Purpose: Tracks ride lifecycle state
+
+--------------------------------------------------------------------------------
+9. EXCEPTIONS (Error Handling)
+--------------------------------------------------------------------------------
+
+📄 RideNotFoundException.java
+   Path: /backend/ride-service/src/main/java/com/campusride/rideservice/exception/RideNotFoundException.java
+   
+   Thrown when: Ride ID doesn't exist
+   HTTP Status: 404 Not Found
+
+📄 InvalidRideStatusException.java
+   Path: /backend/ride-service/src/main/java/com/campusride/rideservice/exception/InvalidRideStatusException.java
+   
+   Thrown when: Invalid status transition (e.g., complete before start)
+   HTTP Status: 400 Bad Request
+
+📄 GlobalExceptionHandler.java
+   Path: /backend/ride-service/src/main/java/com/campusride/rideservice/exception/GlobalExceptionHandler.java
+   
+   Purpose: Catches all exceptions and returns proper JSON error responses
+
+📄 ApiError.java
+   Path: /backend/ride-service/src/main/java/com/campusride/rideservice/exception/ApiError.java
+   
+   Purpose: Standard error response format with timestamp, status, message
+
+--------------------------------------------------------------------------------
+10. CONFIGURATION
+--------------------------------------------------------------------------------
+
+📄 CorsConfig.java
+   Path: /backend/ride-service/src/main/java/com/campusride/rideservice/config/CorsConfig.java
+   
+   Purpose: Allows frontend (localhost:5173) to call API
+
+📄 RestTemplateConfig.java
+   Path: /backend/ride-service/src/main/java/com/campusride/rideservice/config/RestTemplateConfig.java
+   
+   Purpose: Configures HTTP client for calling User Service
+
+
+================================================================================
+                       📦 BOOKING SERVICE (Port: 8084)
+================================================================================
+
+Purpose: Manages ride bookings, cancellations, and booking history
+
+--------------------------------------------------------------------------------
+1. MAIN APPLICATION
+--------------------------------------------------------------------------------
+
+📄 BookingServiceApplication.java
+   Path: /backend/booking-service/src/main/java/com/campusride/bookingservice/BookingServiceApplication.java
+   
+   - Main entry point for Booking Service
+   - Starts Spring Boot application
+   - Enables Eureka client for service discovery
+   - Runs on port 8084
+
+--------------------------------------------------------------------------------
+2. CONTROLLERS (API Endpoints)
+--------------------------------------------------------------------------------
+
+📄 BookingController.java
+   Path: /backend/booking-service/src/main/java/com/campusride/bookingservice/controller/BookingController.java
+   
+   Purpose: Handles HTTP requests for booking operations
+   
+   Endpoints:
+   - POST   /api/bookings           → Create new booking
+   - GET    /api/bookings/{id}      → Get booking details by ID
+   - GET    /api/bookings/user/{id} → Get all bookings by user ID
+   - GET    /api/bookings/ride/{id} → Get all bookings for a ride
+   - PUT    /api/bookings/{id}      → Update booking status
+   - DELETE /api/bookings/{id}      → Cancel/delete booking
+
+--------------------------------------------------------------------------------
+3. ENTITIES (Database Models)
+--------------------------------------------------------------------------------
+
+📄 Booking.java
+   Path: /backend/booking-service/src/main/java/com/campusride/bookingservice/entity/Booking.java
+   
+   Purpose: Database table model for bookings
+   
+   Fields:
+   - id: Unique booking identifier
+   - rideId: ID of ride being booked
+   - userId: ID of user making booking
+   - seatsBooked: Number of seats booked
+   - totalPrice: Total cost (seatsBooked × pricePerSeat)
+   - status: PENDING, CONFIRMED, CANCELLED, COMPLETED
+   - createdAt: When booking was created
+   - updatedAt: Last update timestamp
+   
+   Business Methods:
+   - confirm(): Changes status to CONFIRMED
+   - cancel(): Changes status to CANCELLED
+   - complete(): Changes status to COMPLETED
+
+--------------------------------------------------------------------------------
+4. DTOs (Data Transfer Objects)
+--------------------------------------------------------------------------------
+
+📄 BookingRequest.java
+   Path: /backend/booking-service/src/main/java/com/campusride/bookingservice/dto/BookingRequest.java
+   
+   Purpose: Request body for creating booking
+   Fields: rideId, userId, seatsBooked
+
+📄 BookingResponse.java
+   Path: /backend/booking-service/src/main/java/com/campusride/bookingservice/dto/BookingResponse.java
+   
+   Purpose: Response sent to frontend with booking details
+   Fields: All booking fields + ride details
+
+📄 BookingUpdateRequest.java
+   Path: /backend/booking-service/src/main/java/com/campusride/bookingservice/dto/BookingUpdateRequest.java
+   
+   Purpose: Request body for updating booking status
+   Fields: status
+
+📄 RideResponse.java
+   Path: /backend/booking-service/src/main/java/com/campusride/bookingservice/dto/RideResponse.java
+   
+   Purpose: Ride information embedded in BookingResponse
+   Fields: id, source, destination, departureTime, status, etc.
+
+📄 ErrorResponse.java
+   Path: /backend/booking-service/src/main/java/com/campusride/bookingservice/dto/ErrorResponse.java
+   
+   Purpose: Standard error response format
+   Fields: timestamp, status, error, message
+
+--------------------------------------------------------------------------------
+5. REPOSITORIES (Database Access)
+--------------------------------------------------------------------------------
+
+📄 BookingRepository.java
+   Path: /backend/booking-service/src/main/java/com/campusride/bookingservice/repository/BookingRepository.java
+   
+   Purpose: Database operations for Booking entity
+   
+   Methods:
+   - findByUserId(): Get all bookings by a user
+   - findByRideId(): Get all bookings for a specific ride
+   - findByUserIdAndStatus(): Get user's bookings with specific status
+   - findByRideIdAndStatus(): Get ride's bookings with specific status
+
+--------------------------------------------------------------------------------
+6. SERVICES (Business Logic)
+--------------------------------------------------------------------------------
+
+📄 BookingService.java (Interface)
+   Path: /backend/booking-service/src/main/java/com/campusride/bookingservice/service/BookingService.java
+   
+   Purpose: Defines booking business operations
+
+📄 BookingServiceImpl.java (Implementation)
+   Path: /backend/booking-service/src/main/java/com/campusride/bookingservice/service/impl/BookingServiceImpl.java
+   
+   Purpose: Implements all booking business logic
+   
+   Key Features:
+   - Creates bookings with seat availability check
+   - Calls Ride Service to verify ride exists
+   - Calculates total price automatically
+   - Updates booking status
+   - Prevents double booking
+   - Validates cancellation rules
+
+📄 RideServiceClient.java (Interface)
+   Path: /backend/booking-service/src/main/java/com/campusride/bookingservice/service/RideServiceClient.java
+   
+   Purpose: Defines methods to call Ride Service
+
+📄 RideServiceClientImpl.java (Implementation)
+   Path: /backend/booking-service/src/main/java/com/campusride/bookingservice/service/impl/RideServiceClientImpl.java
+   
+   Purpose: Communicates with Ride Service via REST API
+   
+   Methods:
+   - getRideById(rideId): Fetches ride details
+   - acceptRide(rideId, passengerId): Calls ride service to accept ride
+   - URL: http://localhost:8083/api/rides/
+
+--------------------------------------------------------------------------------
+7. ENUMS (Constants)
+--------------------------------------------------------------------------------
+
+📄 BookingStatus.java
+   Path: /backend/booking-service/src/main/java/com/campusride/bookingservice/enums/BookingStatus.java
+   
+   Values: PENDING, CONFIRMED, CANCELLED, COMPLETED
+   Purpose: Tracks booking lifecycle state
+
+--------------------------------------------------------------------------------
+8. EXCEPTIONS (Error Handling)
+--------------------------------------------------------------------------------
+
+📄 BookingNotFoundException.java
+   Path: /backend/booking-service/src/main/java/com/campusride/bookingservice/exception/BookingNotFoundException.java
+   
+   Thrown when: Booking ID doesn't exist
+   HTTP Status: 404 Not Found
+
+📄 RideNotAvailableException.java
+   Path: /backend/booking-service/src/main/java/com/campusride/bookingservice/exception/RideNotAvailableException.java
+   
+   Thrown when: Ride doesn't exist or no seats available
+   HTTP Status: 400 Bad Request
+
+📄 InvalidBookingOperationException.java
+   Path: /backend/booking-service/src/main/java/com/campusride/bookingservice/exception/InvalidBookingOperationException.java
+   
+   Thrown when: Invalid operation (e.g., cancel completed booking)
+   HTTP Status: 400 Bad Request
+
+📄 GlobalExceptionHandler.java
+   Path: /backend/booking-service/src/main/java/com/campusride/bookingservice/exception/GlobalExceptionHandler.java
+   
+   Purpose: Catches all exceptions and returns proper JSON error responses
+
+--------------------------------------------------------------------------------
+9. CONFIGURATION
+--------------------------------------------------------------------------------
+
+📄 CorsConfig.java
+   Path: /backend/booking-service/src/main/java/com/campusride/bookingservice/config/CorsConfig.java
+   
+   Purpose: Allows frontend (localhost:5173) to call API
+
+📄 RestTemplateConfig.java
+   Path: /backend/booking-service/src/main/java/com/campusride/bookingservice/config/RestTemplateConfig.java
+   
+   Purpose: Configures HTTP client for calling Ride Service
+
+
+================================================================================
+                        🔄 HOW SERVICES WORK TOGETHER
+================================================================================
+
+SCENARIO 1: Driver Creates a Ride
+----------------------------------
+1. Driver fills create ride form in frontend
+2. Frontend → POST /api/rides (Ride Service)
+3. Ride Service:
+   - Validates data
+   - Saves ride to database with status PENDING
+   - Fetches driver's vehicle info from User Service
+   - Returns RideResponse with vehicle info
+4. Frontend displays success message
+
+SCENARIO 2: Student Searches for Rides
+---------------------------------------
+1. Student types in search box (real-time)
+2. Frontend → POST /api/rides/search (Ride Service)
+3. Ride Service:
+   - Filters rides where:
+     * status = PENDING
+     * departureTime > NOW
+     * driverId ≠ current user (hide own rides)
+     * source/destination matches search
+   - For each ride, fetches vehicle info
+   - Returns list of RideResponse
+4. Frontend displays ride cards with vehicle numbers
+
+SCENARIO 3: Student Books a Ride
+---------------------------------
+1. Student clicks on ride card
+2. Frontend shows RideDetailsPage
+3. Student clicks "Book Ride"
+4. Frontend → PUT /api/rides/{id}/accept (Ride Service)
+5. Ride Service:
+   - Validates ride is PENDING
+   - Updates ride: status = ACCEPTED, passengerId = student ID
+   - Decrements availableSeats
+   - Returns updated RideResponse
+6. Frontend → POST /api/bookings (Booking Service)
+7. Booking Service:
+   - Creates booking record
+   - Calculates totalPrice
+   - Returns BookingResponse
+8. Frontend shows booking confirmation
+
+SCENARIO 4: Driver Starts Ride
+-------------------------------
+1. Driver goes to My Rides
+2. Clicks on accepted ride → "Start Ride"
+3. Frontend → PUT /api/rides/{id}/start (Ride Service)
+4. Ride Service:
+   - Validates ride status is ACCEPTED
+   - Updates status to STARTED
+   - Returns updated RideResponse
+5. Frontend updates UI showing ride is in progress
+
+SCENARIO 5: Driver Completes Ride
+----------------------------------
+1. Driver clicks "Complete Ride"
+2. Frontend → PUT /api/rides/{id}/complete (Ride Service)
+3. Ride Service:
+   - Validates ride status is STARTED
+   - Updates status to COMPLETED
+   - Returns updated RideResponse
+4. Frontend → GET /api/bookings/ride/{id} (Booking Service)
+5. Booking Service returns all bookings for this ride
+6. Booking Service marks bookings as COMPLETED
+7. Frontend shows completion confirmation
+
+
+================================================================================
+                          📊 DATABASE TABLES
+================================================================================
+
+RIDES TABLE
+-----------
+id                  BIGINT (Primary Key)
+driver_id           BIGINT (Foreign Key → users.id)
+passenger_id        BIGINT (Foreign Key → users.id, nullable)
+type                ENUM('OFFERING', 'REQUESTING')
+source              VARCHAR(255)
+destination         VARCHAR(255)
+departure_time      DATETIME
+available_seats     INT
+price_per_seat      DECIMAL(10,2)
+status              ENUM('PENDING', 'ACCEPTED', 'STARTED', 'COMPLETED', 'CANCELLED')
+notes               TEXT
+created_at          DATETIME
+
+BOOKINGS TABLE
+--------------
+id                  BIGINT (Primary Key)
+ride_id             BIGINT (Foreign Key → rides.id)
+user_id             BIGINT (Foreign Key → users.id)
+seats_booked        INT
+total_price         DECIMAL(10,2)
+status              ENUM('PENDING', 'CONFIRMED', 'CANCELLED', 'COMPLETED')
+created_at          DATETIME
+updated_at          DATETIME
+
+
+================================================================================
+                          🔐 SECURITY & VALIDATION
+================================================================================
+
+Ride Service:
+- No authentication (relies on API Gateway)
+- Validates departure time is in future
+- Prevents invalid status transitions
+- Filters own rides from search results
+
+Booking Service:
+- No authentication (relies on API Gateway)
+- Checks seat availability before booking
+- Validates ride exists via Ride Service
+- Prevents double booking same ride
+
+
+================================================================================
+                          🚀 RUNNING THE SERVICES
+================================================================================
+
+Prerequisites:
+- Java 17
+- Maven
+- MySQL running on localhost:3306
+- Eureka Server running on port 8761
+
+Start Ride Service:
+cd backend/ride-service
+mvn spring-boot:run
+
+Start Booking Service:
+cd backend/booking-service
+mvn spring-boot:run
+
+Health Check:
+- Ride Service: http://localhost:8083/actuator/health
+- Booking Service: http://localhost:8084/actuator/health
+
+
+================================================================================
+                          📝 IMPORTANT NOTES
+================================================================================
+
+1. Ride Service fetches vehicle info from User Service for display in frontend
+2. Both services register with Eureka for service discovery
+3. Ride Service filters past rides - only shows future rides
+4. Real-time search in frontend filters results as user types
+5. Vehicle numbers are displayed in ride cards (e.g., GJ01AB1234)
+6. Booking Service doesn't directly modify rides - calls Ride Service API
+7. All exceptions return proper JSON error responses
+8. CORS is configured to allow frontend (localhost:5173) to call APIs
+
+
+================================================================================
+                          📞 SUPPORT & MAINTENANCE
+================================================================================
+
+For issues or questions about these services:
+- Check logs in console where services are running
+- Verify database connection and tables exist
+- Ensure Eureka Server is running
+- Check User Service is running (Ride Service depends on it)
+- Verify API Gateway is not blocking requests
+
+
+================================================================================
+                          END OF DOCUMENTATION
+================================================================================

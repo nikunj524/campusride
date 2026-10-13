@@ -11,7 +11,6 @@ public record UserProfileResponse(
         String email,
         String phoneNumber,
         Role role,
-        Boolean driverEligible,
         LocalDateTime createdAt
 ) {
 }

@@ -58,6 +58,13 @@ public class VehicleServiceImpl implements VehicleService {
     }
 
     @Override
+    public VehicleResponse getVehicleByUserId(Long userId) {
+        Vehicle vehicle = vehicleRepository.findByUserId(userId)
+                .orElseThrow(() -> new VehicleNotFoundException(userId));
+        return toResponse(vehicle);
+    }
+
+    @Override
     @Transactional
     public VehicleResponse updateMyVehicle(String email, VehicleUpdateRequest request) {
         Vehicle vehicle = findVehicleForDriver(email);

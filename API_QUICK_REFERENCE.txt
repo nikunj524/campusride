@@ -1,0 +1,242 @@
+==========================================
+CAMPUSRIDE API - QUICK REFERENCE
+==========================================
+
+📦 POSTMAN COLLECTION FILES:
+----------------------------
+1. CampusRide_Postman_Collection.json  (Import this in Postman)
+2. POSTMAN_COLLECTION_GUIDE.txt        (Detailed instructions)
+3. API_QUICK_REFERENCE.txt             (This file - Quick cheatsheet)
+
+==========================================
+⚡ QUICK START (3 STEPS)
+==========================================
+
+1️⃣  Import Collection in Postman
+   File → Import → CampusRide_Postman_Collection.json
+
+2️⃣  Create Environment "CampusRide Local"
+   Add variables: baseUrl, token, userId
+
+3️⃣  Run Login Request
+   Token auto-save hoga, then use any API!
+
+==========================================
+🔑 TEST ACCOUNTS
+==========================================
+
+ADMIN:    admin@campusride.com / admin123
+DRIVER:   h@gmail.com / 1234 (ID: 15, Vehicle: GJ4W10)
+STUDENT:  z@gmail.com / 1234 (ID: 29)
+
+==========================================
+📊 API SUMMARY (32 ENDPOINTS)
+==========================================
+
+Authentication (7)          User Service (5)
+-------------------         -----------------
+✓ Register Student          ✓ Get Profile
+✓ Register Driver           ✓ Update Profile
+✓ Login                     ✓ Get All Users
+✓ Login Admin               ✓ Get User By ID
+✓ Forgot Password           ✓ Delete User
+✓ Verify OTP
+✓ Reset Password            Vehicle Service (5)
+                            -------------------
+Ride Service (10)           ✓ Add Vehicle
+------------------          ✓ Get My Vehicles
+✓ Create Ride (Offer)       ✓ Get Vehicle By User
+✓ Create Ride (Request)     ✓ Update Vehicle
+✓ Search Rides              ✓ Delete Vehicle
+✓ Get All Rides
+✓ Get Ride By ID            Admin Service (5)
+✓ Get My Rides              ------------------
+✓ Update Ride               ✓ Get Driver Requests
+✓ Delete Ride               ✓ Approve Driver
+✓ Accept Ride               ✓ Reject Driver
+✓ Cancel Ride               ✓ Get Settings
+                            ✓ Update Settings
+Booking Service (5)
+-------------------
+✓ Create Booking
+✓ Get My Bookings
+✓ Get Booking By ID
+✓ Get Bookings By Ride
+✓ Cancel Booking
+
+==========================================
+🌐 SERVICE URLS
+==========================================
+
+Gateway:   http://localhost:8080  (Use this for ALL API calls)
+Eureka:    http://localhost:8761  (Service registry dashboard)
+Frontend:  http://localhost:5174  (React app)
+
+Direct Services (for debugging):
+- Auth:    http://localhost:8081
+- User:    http://localhost:8082
+- Ride:    http://localhost:8083
+- Booking: http://localhost:8084
+
+==========================================
+📝 COMMON REQUEST EXAMPLES
+==========================================
+
+Login:
+------
+POST /auth-service/api/auth/login
+{
+  "email": "h@gmail.com",
+  "password": "1234"
+}
+Response: { "token": "...", "userId": 15, ... }
+
+Create Ride:
+------------
+POST /ride-service/api/rides
+Headers: Authorization: Bearer {{token}}
+{
+  "type": "OFFERING",
+  "source": "Andheri",
+  "destination": "Bandra",
+  "departureTime": "2026-09-20T10:00:00",
+  "availableSeats": 3,
+  "pricePerSeat": 50.00
+}
+
+Search Rides:
+-------------
+GET /ride-service/api/rides/search?source=Andheri&destination=Bandra&type=OFFERING
+
+Create Booking:
+---------------
+POST /booking-service/api/bookings
+Headers: Authorization: Bearer {{token}}
+{
+  "rideId": 7,
+  "seatsBooked": 1
+}
+
+Add Vehicle:
+------------
+POST /user-service/api/vehicles
+Headers: Authorization: Bearer {{token}}
+{
+  "vehicleNumber": "GJ01AB1234",
+  "vehicleType": "CAR",
+  "vehicleModel": "Maruti Swift",
+  "vehicleColor": "White",
+  "seatingCapacity": 4
+}
+
+==========================================
+🔒 AUTHORIZATION
+==========================================
+
+Most APIs need token in header:
+Authorization: Bearer <your-token>
+
+Public APIs (No auth needed):
+- POST /api/auth/register
+- POST /api/auth/login
+- GET  /api/rides/search
+- GET  /api/rides/{id}
+- GET  /api/vehicles/user/{userId}
+
+==========================================
+📋 TESTING FLOWS
+==========================================
+
+Student Flow:
+-------------
+Login → Get Profile → Search Rides → Create Booking → Get My Bookings
+
+Driver Flow:
+------------
+Login → Add Vehicle → Create Ride → Get My Rides → View Bookings
+
+Admin Flow:
+-----------
+Login Admin → Get Users → Get Driver Requests → Approve/Reject
+
+==========================================
+❗ COMMON ERRORS
+==========================================
+
+401 Unauthorized     → Login again, token expired
+403 Forbidden        → Wrong role (need admin/driver)
+404 Not Found        → Invalid ID or service down
+500 Server Error     → Check backend logs
+
+==========================================
+✅ HEALTH CHECK COMMANDS
+==========================================
+
+Check All Services:
+curl http://localhost:8761  # Eureka (see all services)
+
+Check Individual Services:
+curl http://localhost:8081/actuator/health  # Auth
+curl http://localhost:8082/actuator/health  # User
+curl http://localhost:8083/actuator/health  # Ride
+curl http://localhost:8084/actuator/health  # Booking
+curl http://localhost:8080/actuator/health  # Gateway
+
+All should return: {"status":"UP"}
+
+==========================================
+🎯 TOP 10 MOST USED APIs
+==========================================
+
+1.  POST /auth-service/api/auth/login
+2.  GET  /user-service/api/users/profile
+3.  GET  /ride-service/api/rides/search
+4.  POST /ride-service/api/rides
+5.  GET  /ride-service/api/rides/my
+6.  POST /booking-service/api/bookings
+7.  GET  /booking-service/api/bookings/my
+8.  POST /user-service/api/vehicles
+9.  GET  /user-service/api/admin/driver-requests
+10. PUT  /user-service/api/admin/approve-driver/{id}
+
+==========================================
+💡 PRO TIPS
+==========================================
+
+1. Environment Variables:
+   Set baseUrl = http://localhost:8080
+   Token auto-saves after login!
+
+2. Save Examples:
+   Right-click request → Save Response as Example
+
+3. Folder Runner:
+   Run entire folder at once for testing
+
+4. Pre-request Scripts:
+   Auto-generate timestamps, IDs etc.
+
+5. Tests Tab:
+   Add assertions to verify responses
+
+==========================================
+📞 NEED HELP?
+==========================================
+
+1. Read: POSTMAN_COLLECTION_GUIDE.txt (detailed guide)
+2. Check: Eureka Dashboard (http://localhost:8761)
+3. Verify: Services are running (all 5 should be UP)
+4. Test: Health check endpoints first
+
+==========================================
+
+Collection has 32+ APIs covering:
+✅ Authentication & Authorization
+✅ User Management
+✅ Vehicle Management
+✅ Ride Creation & Search
+✅ Booking Management
+✅ Admin Operations
+✅ Health Monitoring
+
+Ready to test! 🚀

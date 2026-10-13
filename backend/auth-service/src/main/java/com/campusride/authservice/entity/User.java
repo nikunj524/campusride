@@ -49,9 +49,6 @@ public class User {
     @Column(nullable = false, length = 20)
     private Role role;
 
-    @Column(name = "driver_eligible")
-    private Boolean driverEligible;
-
     @Column(length = 100)
     private String passwordResetOtpHash;
 
@@ -80,5 +77,9 @@ public class User {
         this.passwordResetOtpHash = null;
         this.passwordResetOtpExpiresAt = null;
         this.passwordResetVerifiedUntil = null;
+    }
+
+    public void switchRole(Role newRole) {
+        this.role = newRole;
     }
 }

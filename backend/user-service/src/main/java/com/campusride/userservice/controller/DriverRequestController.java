@@ -18,8 +18,9 @@ import java.util.List;
 @RestController
 @CrossOrigin(
         origins = "http://localhost:5173",
-        methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS},
-        allowedHeaders = {"Authorization", "Content-Type"}
+        methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.PATCH, RequestMethod.DELETE, RequestMethod.OPTIONS},
+        allowedHeaders = {"Authorization", "Content-Type"},
+        allowCredentials = "true"
 )
 public class DriverRequestController {
 
@@ -38,6 +39,23 @@ public class DriverRequestController {
     @GetMapping("/api/driver-requests/me")
     public ResponseEntity<DriverRequestResponse> getMyRequest(Authentication authentication) {
         return ResponseEntity.ok(driverRequestService.getMyRequest(authentication.getName()));
+    }
+
+    @GetMapping("/api/driver-requests/my-status")
+    public ResponseEntity<java.util.Map<String, Object>> getMyRequestStatus(Authentication authentication) {
+        try {
+            DriverRequestResponse request = driverRequestService.getMyRequest(authentication.getName());
+            return ResponseEntity.ok(java.util.Map.of(
+                "status", request.status(),
+                "canSwitchToDriver", request.status().equals("APPROVED")
+            ));
+        } catch (Exception e) {
+            // No request found
+            return ResponseEntity.ok(java.util.Map.of(
+                "status", "NONE",
+                "canSwitchToDriver", false
+            ));
+        }
     }
 
     @GetMapping("/api/admin/driver-requests")

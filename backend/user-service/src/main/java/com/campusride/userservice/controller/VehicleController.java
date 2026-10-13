@@ -10,6 +10,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,7 +23,8 @@ import org.springframework.web.bind.annotation.RestController;
 @CrossOrigin(
         origins = "http://localhost:5173",
         methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS},
-        allowedHeaders = {"Authorization", "Content-Type"}
+        allowedHeaders = {"Authorization", "Content-Type"},
+        allowCredentials = "true"
 )
 public class VehicleController {
 
@@ -43,6 +45,11 @@ public class VehicleController {
     @GetMapping("/my")
     public ResponseEntity<VehicleResponse> getMyVehicle(Authentication authentication) {
         return ResponseEntity.ok(vehicleService.getMyVehicle(authentication.getName()));
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<VehicleResponse> getVehicleByUserId(@PathVariable Long userId) {
+        return ResponseEntity.ok(vehicleService.getVehicleByUserId(userId));
     }
 
     @PutMapping("/my")

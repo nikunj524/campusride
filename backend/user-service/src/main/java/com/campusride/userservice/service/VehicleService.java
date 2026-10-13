@@ -10,6 +10,8 @@ public interface VehicleService {
 
     VehicleResponse getMyVehicle(String email);
 
+    VehicleResponse getVehicleByUserId(Long userId);
+
     VehicleResponse updateMyVehicle(String email, VehicleUpdateRequest request);
 
     void deleteMyVehicle(String email);
