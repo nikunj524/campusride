@@ -18,7 +18,15 @@ function LoginPage() {
     try {
       const { data } = await api.post('/auth/login', form)
       saveSession(data)
-      navigate(location.state?.from?.pathname || '/dashboard', { replace: true })
+      
+      // Redirect based on user role
+      if (data.user.role === 'ADMIN') {
+        navigate('/admin/dashboard', { replace: true })
+      } else if (data.user.role === 'DRIVER') {
+        navigate('/driver/dashboard', { replace: true })
+      } else {
+        navigate(location.state?.from?.pathname || '/dashboard', { replace: true })
+      }
     } catch (requestError) {
       setError(requestError.response?.data?.message || 'Unable to sign in. Please try again.')
     } finally {

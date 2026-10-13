@@ -17,7 +17,15 @@ function RegisterPage() {
     try {
       const { data } = await api.post('/auth/register', form)
       saveSession(data)
-      navigate('/dashboard', { replace: true })
+      
+      // Redirect based on registered role
+      if (data.user.role === 'ADMIN') {
+        navigate('/admin/dashboard', { replace: true })
+      } else if (data.user.role === 'DRIVER') {
+        navigate('/driver/dashboard', { replace: true })
+      } else {
+        navigate('/dashboard', { replace: true })
+      }
     } catch (requestError) {
       const fieldErrors = requestError.response?.data?.fieldErrors
       setError(fieldErrors ? Object.values(fieldErrors)[0] : requestError.response?.data?.message || 'Unable to create the account.')

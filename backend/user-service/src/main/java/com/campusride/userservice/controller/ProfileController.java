@@ -19,7 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 @CrossOrigin(
         origins = "http://localhost:5173",
         methods = {RequestMethod.GET, RequestMethod.PUT, RequestMethod.OPTIONS},
-        allowedHeaders = {"Authorization", "Content-Type"}
+        allowedHeaders = {"Authorization", "Content-Type"},
+        allowCredentials = "true"
 )
 public class ProfileController {
 
@@ -27,6 +28,11 @@ public class ProfileController {
 
     public ProfileController(ProfileService profileService) {
         this.profileService = profileService;
+    }
+
+    @GetMapping
+    public ResponseEntity<?> getAllUsers() {
+        return ResponseEntity.ok(profileService.getAllUsers());
     }
 
     @GetMapping("/{id}")

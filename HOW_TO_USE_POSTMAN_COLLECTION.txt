@@ -1,0 +1,416 @@
+==========================================
+POSTMAN COLLECTION - SIMPLE STEPS 🚀
+==========================================
+
+Bhai, bilkul simple hai! Bas yeh steps follow karo:
+
+==========================================
+STEP 1: POSTMAN MEIN IMPORT KARO
+==========================================
+
+1️⃣  Postman kholo
+
+2️⃣  "Import" button pe click karo (top left corner mein)
+
+3️⃣  "Choose Files" pe click karo
+
+4️⃣  Is file ko select karo:
+    📁 CampusRide_Postman_Collection.json
+    
+    Location: /Users/hardikmakwana/SpringProject/campusride/
+
+5️⃣  "Import" button click karo
+
+6️⃣  ✅ Done! Left sidebar mein "CampusRide API Collection" dikhai dega
+
+==========================================
+STEP 2: ENVIRONMENT SETUP (OPTIONAL)
+==========================================
+
+Environment banane se token management easy ho jata hai:
+
+1️⃣  Left sidebar mein "Environments" pe click karo
+
+2️⃣  "+" (plus icon) click karo
+
+3️⃣  Environment name: "CampusRide Local"
+
+4️⃣  Variables add karo:
+
+    Variable          | Initial Value             | Current Value
+    ------------------|---------------------------|---------------------------
+    baseUrl           | http://localhost:8080     | http://localhost:8080
+    token             | (khali rakhdo)            | (khali rakhdo)
+    userId            | (khali rakhdo)            | (khali rakhdo)
+
+5️⃣  "Save" button click karo
+
+6️⃣  Top right corner se environment select karo: "CampusRide Local"
+
+NOTE: token aur userId AUTO-FILL honge jab tum login karoge! 🎯
+
+==========================================
+STEP 3: FIRST API TEST - LOGIN
+==========================================
+
+Ab testing start karte hain:
+
+1️⃣  Left sidebar mein "CampusRide API Collection" expand karo
+
+2️⃣  "Authentication" folder expand karo
+
+3️⃣  "Login" request pe click karo
+
+4️⃣  Body tab check karo, yeh default data hai:
+    {
+      "email": "h@gmail.com",
+      "password": "1234"
+    }
+
+5️⃣  "Send" button click karo 🚀
+
+6️⃣  Response dekho:
+    ✅ Status: 200 OK
+    ✅ Body mein token aayega
+    ✅ userId: 15
+    ✅ Role: DRIVER
+
+7️⃣  🎉 Token automatically save ho gaya environment mein!
+
+==========================================
+STEP 4: TEST ANOTHER API
+==========================================
+
+Ab koi aur API test karte hain:
+
+1️⃣  "User Service" folder expand karo
+
+2️⃣  "Get Profile" request pe click karo
+
+3️⃣  "Authorization" tab check karo:
+    - Type: Bearer Token
+    - Token: {{token}} ✅ (auto-use hoga!)
+
+4️⃣  "Send" button click karo
+
+5️⃣  ✅ Tumhari profile details aayengi!
+
+==========================================
+STEP 5: TRY DIFFERENT FLOWS
+==========================================
+
+🎓 STUDENT FLOW:
+----------------
+1. Authentication → "Login" 
+   (email: z@gmail.com, password: 1234)
+
+2. Ride Service → "Search Rides"
+   Query params already set hain
+
+3. Booking Service → "Create Booking"
+   Body mein rideId: 7 set karo
+
+4. Booking Service → "Get My Bookings"
+   Tumhari bookings dikhegi
+
+🚗 DRIVER FLOW:
+---------------
+1. Authentication → "Login"
+   (email: h@gmail.com, password: 1234)
+
+2. Vehicle Service → "Get My Vehicles"
+   Tumhara vehicle dikhai dega
+
+3. Ride Service → "Create Ride (Offering)"
+   Body already filled hai, just Send karo
+
+4. Ride Service → "Get My Rides"
+   Tumhari created rides dikhegi
+
+🛡️ ADMIN FLOW:
+--------------
+1. Authentication → "Login Admin"
+   (email: admin@campusride.com, password: admin123)
+
+2. Admin Service → "Get Driver Requests"
+   Pending approvals dikhenge
+
+3. User Service → "Get All Users"
+   Sab users ki list
+
+4. Admin Service → "Get Admin Settings"
+   Platform settings
+
+==========================================
+TESTING TIPS 💡
+==========================================
+
+✅ SEQUENTIAL TESTING:
+   Folders ko top to bottom test karo
+
+✅ AUTO TOKEN:
+   Login karne ke baad token save ho jata hai
+   Logout/new user test karne ke liye bas login again
+
+✅ CHANGE DATA:
+   Request bodies mein data modify kar sakte ho
+   Example: source/destination change karo
+
+✅ SAVE EXAMPLES:
+   Good responses ko save karo:
+   Right click → "Save as Example"
+
+✅ CHECK STATUS:
+   Response status codes check karo:
+   - 200 OK = Success ✅
+   - 201 Created = Resource created ✅
+   - 401 Unauthorized = Token issue ❌
+   - 403 Forbidden = Permission issue ❌
+   - 404 Not Found = Resource not found ❌
+
+==========================================
+ALL TEST ACCOUNTS 🔑
+==========================================
+
+Admin Account:
+--------------
+Email:    admin@campusride.com
+Password: admin123
+Use For:  Driver approval, settings, view all users
+
+Driver Account 1:
+-----------------
+Email:    h@gmail.com
+Password: 1234
+User ID:  15
+Vehicle:  GJ4W10 (Splendor)
+Use For:  Create rides, manage vehicle
+
+Student Account:
+----------------
+Email:    z@gmail.com
+Password: 1234
+User ID:  29
+Name:     hardik lala
+Use For:  Search rides, book rides
+
+==========================================
+FOLDER WISE API LIST
+==========================================
+
+📁 Authentication (7 APIs)
+   - Register Student
+   - Register Driver
+   - Login ⭐ (Start here!)
+   - Login Admin
+   - Forgot Password
+   - Verify OTP
+   - Reset Password
+
+📁 User Service (5 APIs)
+   - Get Profile ⭐
+   - Update Profile
+   - Get All Users
+   - Get User By ID
+   - Delete User
+
+📁 Vehicle Service (5 APIs)
+   - Add Vehicle
+   - Get My Vehicles ⭐
+   - Get Vehicle By User ID
+   - Update Vehicle
+   - Delete Vehicle
+
+📁 Ride Service (10 APIs)
+   - Create Ride (Offering) ⭐
+   - Create Ride (Requesting)
+   - Search Rides ⭐
+   - Get All Rides
+   - Get Ride By ID
+   - Get My Rides ⭐
+   - Update Ride
+   - Delete Ride
+   - Accept Ride Request
+   - Cancel Ride
+
+📁 Booking Service (5 APIs)
+   - Create Booking ⭐
+   - Get My Bookings ⭐
+   - Get Booking By ID
+   - Get Bookings By Ride ID
+   - Cancel Booking
+
+📁 Admin Service (5 APIs)
+   - Get Driver Requests ⭐
+   - Approve Driver
+   - Reject Driver
+   - Get Admin Settings
+   - Update Admin Settings
+
+📁 Health Checks (5 APIs)
+   - Eureka Dashboard
+   - Auth Service Health
+   - Ride Service Health
+   - Booking Service Health
+   - Gateway Health
+
+⭐ = Most commonly used APIs
+
+==========================================
+TROUBLESHOOTING 🔧
+==========================================
+
+Problem: Token not working (401 error)
+Solution: Login again, token expire ho gaya hoga
+
+Problem: 403 Forbidden
+Solution: Wrong account, correct role se login karo
+         (Admin APIs need admin login)
+
+Problem: Environment variables not working
+Solution: Top-right se environment select karo
+
+Problem: Connection refused
+Solution: Services running hai? Check karo:
+         http://localhost:8761 (Eureka)
+
+Problem: Can't find collection
+Solution: Left sidebar mein "Collections" tab selected hai?
+
+==========================================
+COMPLETE TEST SEQUENCE 📋
+==========================================
+
+Beginner Sequence (Follow This):
+---------------------------------
+1. Health Checks → Eureka Dashboard (verify services)
+2. Authentication → Login (h@gmail.com)
+3. User Service → Get Profile (verify token)
+4. Vehicle Service → Get My Vehicles (see vehicle)
+5. Ride Service → Search Rides (see available rides)
+6. Ride Service → Create Ride (create new ride)
+7. Authentication → Login (z@gmail.com - student)
+8. Booking Service → Create Booking (book ride 7)
+9. Booking Service → Get My Bookings (see booking)
+10. Authentication → Login Admin (admin)
+11. User Service → Get All Users (see all users)
+12. Admin Service → Get Driver Requests (see pending)
+
+==========================================
+KEYBOARD SHORTCUTS ⌨️
+==========================================
+
+Cmd/Ctrl + N    = New Request
+Cmd/Ctrl + E    = Edit Environment
+Cmd/Ctrl + Enter = Send Request
+Cmd/Ctrl + S    = Save Request
+Cmd/Ctrl + F    = Search in Collection
+
+==========================================
+ADVANCED FEATURES 🎯
+==========================================
+
+1. COLLECTION RUNNER:
+   - Click "..." next to collection name
+   - Select "Run collection"
+   - Test multiple APIs at once
+
+2. PRE-REQUEST SCRIPTS:
+   - Auto-generate data before request
+   - Example: Set dynamic timestamp
+
+3. TESTS:
+   - Verify response automatically
+   - Example: Check status code = 200
+
+4. ENVIRONMENTS:
+   - Switch between Local/Dev/Prod
+   - Change baseUrl easily
+
+==========================================
+QUICK COMMAND REFERENCE 📝
+==========================================
+
+Check if services running:
+curl http://localhost:8761
+
+Test API directly:
+curl -X POST http://localhost:8080/auth-service/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"h@gmail.com","password":"1234"}'
+
+Check service health:
+curl http://localhost:8080/actuator/health
+
+==========================================
+IMPORTANT NOTES ⚠️
+==========================================
+
+1. Services must be running:
+   - Eureka (8761)
+   - Auth (8081)
+   - User (8082)
+   - Ride (8083)
+   - Booking (8084)
+   - Gateway (8080)
+
+2. Database must be running:
+   - MySQL on port 3306
+   - Database: campusride
+
+3. Frontend (optional for API testing):
+   - http://localhost:5174
+
+4. Token expires in 24 hours
+   - Login again if expired
+
+5. All APIs use Gateway URL:
+   - http://localhost:8080
+
+==========================================
+SUCCESS CHECKLIST ✅
+==========================================
+
+Before Testing:
+□ Services running (check Eureka)
+□ Database connected
+□ Collection imported in Postman
+□ Environment created (optional)
+
+First Test:
+□ Login successful
+□ Token received
+□ Get Profile works
+
+Ready to Test All APIs!
+□ Can search rides
+□ Can create rides (driver)
+□ Can book rides (student)
+□ Admin can manage users
+
+==========================================
+NEED MORE HELP? 📚
+==========================================
+
+Detailed Guide:
+📖 POSTMAN_COLLECTION_GUIDE.txt (10KB - full details)
+
+Quick Reference:
+⚡ API_QUICK_REFERENCE.txt (7KB - cheatsheet)
+
+Collection File:
+📦 CampusRide_Postman_Collection.json (25KB - import this)
+
+Project Docs:
+📄 RIDE_AND_BOOKING_SERVICES_DOCUMENTATION.txt
+
+==========================================
+
+Bas itna hi! Simple hai:
+1. Import karo ✅
+2. Login karo ✅
+3. Test karo ✅
+
+Happy Testing! 🚀🎉
+
+Questions? Just ask! 😊

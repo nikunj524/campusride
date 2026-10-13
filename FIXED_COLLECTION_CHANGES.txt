@@ -1,0 +1,242 @@
+==========================================
+POSTMAN COLLECTION - FIXED PATHS
+==========================================
+
+NEW FILE: CampusRide_Postman_Collection_FIXED.json
+
+==========================================
+KEY CHANGES (PATH CORRECTIONS)
+==========================================
+
+AUTH SERVICE - REMOVED /api from path:
+--------------------------------------
+❌ OLD: /auth-service/api/auth/register
+✅ NEW: /auth-service/auth/register
+
+❌ OLD: /auth-service/api/auth/login
+✅ NEW: /auth-service/auth/login
+
+❌ OLD: /auth-service/api/auth/forgot-password
+✅ NEW: /auth-service/auth/forgot-password
+
+❌ OLD: /auth-service/api/auth/verify-otp
+✅ NEW: /auth-service/auth/verify-reset-otp
+
+❌ OLD: /auth-service/api/auth/reset-password
+✅ NEW: /auth-service/auth/reset-password
+
+✅ NEW: /auth-service/auth/profile (added)
+
+USER SERVICE - Correct (has /api):
+----------------------------------
+✅ /user-service/api/users
+✅ /user-service/api/users/{id}
+
+VEHICLE SERVICE - Correct (has /api):
+-------------------------------------
+✅ /user-service/api/vehicles
+✅ /user-service/api/vehicles/my
+✅ /user-service/api/vehicles/user/{userId}
+
+RIDE SERVICE - Correct (has /api):
+----------------------------------
+✅ /ride-service/api/rides
+✅ /ride-service/api/rides/{id}
+✅ /ride-service/api/rides/search (POST method)
+
+BOOKING SERVICE - Correct (has /api):
+-------------------------------------
+✅ /booking-service/api/bookings
+✅ /booking-service/api/bookings/{id}
+✅ /booking-service/api/bookings/passenger/{passengerId}
+✅ /booking-service/api/bookings/ride/{rideId}
+✅ /booking-service/api/bookings/{id}/status (PATCH)
+
+ADMIN SERVICE - Correct (has /api):
+-----------------------------------
+✅ /user-service/api/admin/settings
+
+==========================================
+CONTROLLER MAPPINGS REFERENCE
+==========================================
+
+AuthController:
+  @RequestMapping("/auth")
+  Paths: /register, /login, /forgot-password, etc.
+  Full Path: /auth-service/auth/*
+
+ProfileController:
+  @RequestMapping("/api/users")
+  Full Path: /user-service/api/users/*
+
+VehicleController:
+  @RequestMapping("/api/vehicles")
+  Full Path: /user-service/api/vehicles/*
+
+RideController:
+  @RequestMapping("/api/rides")
+  Full Path: /ride-service/api/rides/*
+
+BookingController:
+  @RequestMapping("/api/bookings")
+  Full Path: /booking-service/api/bookings/*
+
+AdminSettingsController:
+  @RequestMapping("/api/admin/settings")
+  Full Path: /user-service/api/admin/settings
+
+==========================================
+HOW TO USE NEW COLLECTION
+==========================================
+
+1. DELETE OLD COLLECTION:
+   - Open Postman
+   - Right-click "CampusRide API Collection" (old)
+   - Delete
+
+2. IMPORT NEW COLLECTION:
+   - Click Import
+   - Select: CampusRide_Postman_Collection_FIXED.json
+   - Import
+
+3. SET ENVIRONMENT:
+   - Create/Select "CampusRide Local"
+   - Variables:
+     * baseUrl: http://localhost:8080
+     * token: (auto-set on login)
+     * userId: (auto-set on login)
+
+4. TEST:
+   - Run "Login" request
+   - Token will auto-save
+   - All other requests will work!
+
+==========================================
+TEST ACCOUNTS
+==========================================
+
+Admin:
+  Email: admin@campusride.com
+  Password: admin123
+
+Driver:
+  Email: h@gmail.com
+  Password: 1234
+  User ID: 15
+
+Student:
+  Email: z@gmail.com
+  Password: 1234
+  User ID: 29
+
+==========================================
+SAMPLE REQUESTS (CORRECTED)
+==========================================
+
+1. Register Student:
+POST http://localhost:8080/auth-service/auth/register
+{
+  "email": "hardik@gmail.com",
+  "password": "Hardik@8363036",
+  "name": "Test Student",
+  "phoneNumber": "5633332223",
+  "role": "STUDENT"
+}
+
+2. Login:
+POST http://localhost:8080/auth-service/auth/login
+{
+  "email": "h@gmail.com",
+  "password": "1234"
+}
+
+3. Get My Vehicle:
+GET http://localhost:8080/user-service/api/vehicles/my
+Headers: Authorization: Bearer {token}
+
+4. Create Ride:
+POST http://localhost:8080/ride-service/api/rides
+Headers: Authorization: Bearer {token}
+{
+  "source": "Andheri",
+  "destination": "Bandra",
+  "departureTime": "2026-09-25T10:00:00",
+  "availableSeats": 3,
+  "pricePerSeat": 50.00,
+  "driverId": 15
+}
+
+5. Search Rides:
+POST http://localhost:8080/ride-service/api/rides/search
+{
+  "source": "Andheri",
+  "destination": "Bandra"
+}
+
+6. Create Booking:
+POST http://localhost:8080/booking-service/api/bookings
+Headers: Authorization: Bearer {token}
+{
+  "rideId": 7,
+  "passengerId": 29,
+  "seatsBooked": 1
+}
+
+==========================================
+SUMMARY OF FIXES
+==========================================
+
+Total APIs: 30+
+
+Fixed:
+- ✅ Auth Service paths (removed /api)
+- ✅ All endpoints verified against controllers
+- ✅ Token auto-save script included
+- ✅ Proper Bearer token auth configured
+- ✅ Sample data in all requests
+
+Unchanged (already correct):
+- ✅ User Service paths
+- ✅ Vehicle Service paths
+- ✅ Ride Service paths
+- ✅ Booking Service paths
+- ✅ Admin Service paths
+
+==========================================
+QUICK VERIFICATION
+==========================================
+
+Test these in order:
+
+1. Health Checks → Gateway Health
+   Expected: {"status":"UP"}
+
+2. Authentication → Login
+   Expected: 200 OK with token
+
+3. User Service → Get All Users
+   Expected: List of users
+
+4. Vehicle Service → Get My Vehicle
+   Expected: Vehicle details or 404
+
+5. Ride Service → Get All Rides
+   Expected: List of rides
+
+All should work now! 🎉
+
+==========================================
+FILES IN PROJECT
+==========================================
+
+✅ CampusRide_Postman_Collection_FIXED.json (NEW - Use this!)
+   Old: CampusRide_Postman_Collection.json (outdated paths)
+
+✅ FIXED_COLLECTION_CHANGES.txt (this file)
+✅ api_test.txt (command line testing)
+✅ PROJECT_LINKS.txt (all service URLs)
+
+==========================================
+
+IMPORT NEW COLLECTION & TEST! 🚀
+All paths are now correct!

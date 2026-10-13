@@ -1,0 +1,669 @@
+==========================================
+CAMPUSRIDE API TESTING - COMPLETE SEQUENCE
+==========================================
+
+Sab requests ko sequence mein run karo. Niche dono tarike diye hain:
+1. POSTMAN mein manually
+2. Terminal se curl commands
+
+==========================================
+SETUP - PEHLE YEH KARO
+==========================================
+
+Services Check Karo:
+curl http://localhost:8761
+
+Expected: Eureka dashboard HTML page
+
+==========================================
+TEST SEQUENCE - FOLLOW THIS ORDER
+==========================================
+
+==========================================
+1. HEALTH CHECK - Services Running Hai?
+==========================================
+
+Request 1.1: Eureka Dashboard
+------------------------------
+curl http://localhost:8761
+
+Request 1.2: Auth Service Health
+---------------------------------
+curl http://localhost:8081/actuator/health
+
+Expected: {"groups":["liveness","readiness"],"status":"UP"}
+
+Request 1.3: User Service Health
+---------------------------------
+curl http://localhost:8082/actuator/health
+
+Request 1.4: Ride Service Health
+---------------------------------
+curl http://localhost:8083/actuator/health
+
+Request 1.5: Booking Service Health
+------------------------------------
+curl http://localhost:8084/actuator/health
+
+Request 1.6: Gateway Health
+----------------------------
+curl http://localhost:8080/actuator/health
+
+✅ Sab "UP" hone chahiye!
+
+==========================================
+2. AUTHENTICATION - DRIVER LOGIN
+==========================================
+
+Request 2.1: Login as Driver
+-----------------------------
+curl -X POST http://localhost:8080/auth-service/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "h@gmail.com",
+    "password": "1234"
+  }'
+
+Expected Response:
+{
+  "token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJoQGdtYW...",
+  "userId": 15,
+  "email": "h@gmail.com",
+  "role": "DRIVER",
+  "activeRole": "DRIVER",
+  "name": "m h"
+}
+
+⚠️ IMPORTANT: Token copy karo! Aage use hoga!
+TOKEN="paste_your_token_here"
+
+==========================================
+3. USER PROFILE - Verify Token
+==========================================
+
+Request 3.1: Get Profile
+-------------------------
+curl -X GET http://localhost:8080/user-service/api/users/profile \
+  -H "Authorization: Bearer $TOKEN"
+
+Expected: Profile details with user info
+
+Request 3.2: Update Profile
+----------------------------
+curl -X PUT http://localhost:8080/user-service/api/users/profile \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Updated Driver Name",
+    "phoneNumber": "9999999999",
+    "address": "Andheri West, Mumbai"
+  }'
+
+==========================================
+4. VEHICLE MANAGEMENT - Driver Vehicle
+==========================================
+
+Request 4.1: Get My Vehicles
+-----------------------------
+curl -X GET http://localhost:8080/user-service/api/vehicles/my \
+  -H "Authorization: Bearer $TOKEN"
+
+Expected: List of vehicles (should have GJ4W10)
+
+Request 4.2: Add New Vehicle (if needed)
+----------------------------------------
+curl -X POST http://localhost:8080/user-service/api/vehicles \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "vehicleNumber": "GJ01XY9999",
+    "vehicleType": "CAR",
+    "vehicleModel": "Honda City",
+    "vehicleColor": "Silver",
+    "seatingCapacity": 4
+  }'
+
+Request 4.3: Get Vehicle by User ID (Public - no auth)
+-------------------------------------------------------
+curl -X GET http://localhost:8080/user-service/api/vehicles/user/15
+
+Expected: Vehicle details for user 15
+
+==========================================
+5. RIDE CREATION - Create New Ride
+==========================================
+
+Request 5.1: Create Ride (Offering)
+------------------------------------
+curl -X POST http://localhost:8080/ride-service/api/rides \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "OFFERING",
+    "source": "Andheri",
+    "destination": "Bandra",
+    "departureTime": "2026-09-25T10:00:00",
+    "availableSeats": 3,
+    "pricePerSeat": 50.00
+  }'
+
+Expected: Ride created with ID
+⚠️ RIDE_ID note karo (e.g., 18)
+
+Request 5.2: Get My Rides
+--------------------------
+curl -X GET http://localhost:8080/ride-service/api/rides/my \
+  -H "Authorization: Bearer $TOKEN"
+
+Expected: List of rides created by you
+
+Request 5.3: Get Specific Ride
+-------------------------------
+curl -X GET http://localhost:8080/ride-service/api/rides/7
+
+Expected: Ride details (public endpoint)
+
+==========================================
+6. RIDE SEARCH - Find Available Rides
+==========================================
+
+Request 6.1: Search Rides (No filters)
+---------------------------------------
+curl -X GET "http://localhost:8080/ride-service/api/rides/search"
+
+Expected: All available rides
+
+Request 6.2: Search Rides (With filters)
+-----------------------------------------
+curl -X GET "http://localhost:8080/ride-service/api/rides/search?source=Andheri&destination=Bandra&type=OFFERING"
+
+Expected: Filtered rides from Andheri to Bandra
+
+Request 6.3: Get All Rides
+---------------------------
+curl -X GET http://localhost:8080/ride-service/api/rides
+
+Expected: All rides in system
+
+==========================================
+7. STUDENT LOGIN - Switch User
+==========================================
+
+Request 7.1: Login as Student
+------------------------------
+curl -X POST http://localhost:8080/auth-service/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "z@gmail.com",
+    "password": "1234"
+  }'
+
+Expected Response:
+{
+  "token": "eyJhbGciOiJIUzI1NiJ9...",
+  "userId": 29,
+  "email": "z@gmail.com",
+  "role": "STUDENT",
+  "activeRole": "STUDENT",
+  "name": "hardik lala"
+}
+
+⚠️ New TOKEN copy karo!
+STUDENT_TOKEN="paste_student_token_here"
+
+==========================================
+8. BOOKING - Student Books a Ride
+==========================================
+
+Request 8.1: Create Booking
+----------------------------
+curl -X POST http://localhost:8080/booking-service/api/bookings \
+  -H "Authorization: Bearer $STUDENT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "rideId": 7,
+    "seatsBooked": 1
+  }'
+
+Expected: Booking created successfully
+⚠️ BOOKING_ID note karo
+
+Request 8.2: Get My Bookings
+-----------------------------
+curl -X GET http://localhost:8080/booking-service/api/bookings/my \
+  -H "Authorization: Bearer $STUDENT_TOKEN"
+
+Expected: List of bookings by student
+
+Request 8.3: Get Specific Booking
+----------------------------------
+curl -X GET http://localhost:8080/booking-service/api/bookings/1 \
+  -H "Authorization: Bearer $STUDENT_TOKEN"
+
+Expected: Booking details
+
+Request 8.4: Get Bookings by Ride ID
+-------------------------------------
+curl -X GET http://localhost:8080/booking-service/api/bookings/ride/7 \
+  -H "Authorization: Bearer $STUDENT_TOKEN"
+
+Expected: All bookings for ride 7
+
+==========================================
+9. RIDE MANAGEMENT - Driver Side
+==========================================
+
+(Use Driver TOKEN from step 2)
+
+Request 9.1: Accept Ride Request
+---------------------------------
+curl -X POST http://localhost:8080/ride-service/api/rides/7/accept \
+  -H "Authorization: Bearer $TOKEN"
+
+Expected: Ride status changed to ACCEPTED
+
+Request 9.2: Update Ride
+-------------------------
+curl -X PUT http://localhost:8080/ride-service/api/rides/7 \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "source": "Andheri West",
+    "destination": "Bandra East",
+    "departureTime": "2026-09-25T11:00:00",
+    "availableSeats": 2,
+    "pricePerSeat": 60.00
+  }'
+
+Expected: Ride updated
+
+==========================================
+10. ADMIN LOGIN - Admin Operations
+==========================================
+
+Request 10.1: Login as Admin
+-----------------------------
+curl -X POST http://localhost:8080/auth-service/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "admin@campusride.com",
+    "password": "admin123"
+  }'
+
+Expected Response:
+{
+  "token": "eyJhbGciOiJIUzI1NiJ9...",
+  "userId": 1,
+  "email": "admin@campusride.com",
+  "role": "ADMIN",
+  "name": "Admin User"
+}
+
+⚠️ Admin TOKEN copy karo!
+ADMIN_TOKEN="paste_admin_token_here"
+
+==========================================
+11. ADMIN OPERATIONS - User Management
+==========================================
+
+Request 11.1: Get All Users
+----------------------------
+curl -X GET http://localhost:8080/user-service/api/users \
+  -H "Authorization: Bearer $ADMIN_TOKEN"
+
+Expected: List of all users
+
+Request 11.2: Get Driver Requests (Pending Approval)
+-----------------------------------------------------
+curl -X GET http://localhost:8080/user-service/api/admin/driver-requests \
+  -H "Authorization: Bearer $ADMIN_TOKEN"
+
+Expected: List of drivers waiting for approval
+
+Request 11.3: Approve Driver
+-----------------------------
+curl -X PUT http://localhost:8080/user-service/api/admin/approve-driver/15 \
+  -H "Authorization: Bearer $ADMIN_TOKEN"
+
+Expected: Driver approved
+
+Request 11.4: Get User By ID
+-----------------------------
+curl -X GET http://localhost:8080/user-service/api/users/15 \
+  -H "Authorization: Bearer $ADMIN_TOKEN"
+
+Expected: User details
+
+==========================================
+12. ADMIN SETTINGS - Platform Config
+==========================================
+
+Request 12.1: Get Admin Settings
+---------------------------------
+curl -X GET http://localhost:8080/user-service/api/admin/settings \
+  -H "Authorization: Bearer $ADMIN_TOKEN"
+
+Expected: Platform settings
+
+Request 12.2: Update Admin Settings
+------------------------------------
+curl -X PUT http://localhost:8080/user-service/api/admin/settings \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "platformName": "CampusRide",
+    "supportEmail": "support@campusride.com",
+    "supportPhone": "1800-123-4567",
+    "maxRideDistance": 100,
+    "minRidePrice": 10.00,
+    "maxRidePrice": 500.00,
+    "commissionRate": 10.0,
+    "autoApproveDrivers": false,
+    "requireVehicleVerification": true,
+    "allowCancellation": true,
+    "cancellationChargePercentage": 20.0,
+    "notificationsEnabled": true
+  }'
+
+Expected: Settings updated
+
+==========================================
+13. REGISTRATION - New Users
+==========================================
+
+Request 13.1: Register New Student
+-----------------------------------
+curl -X POST http://localhost:8080/auth-service/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "newstudent@test.com",
+    "password": "1234",
+    "name": "Test Student",
+    "phoneNumber": "9876543210",
+    "role": "STUDENT"
+  }'
+
+Expected: User registered successfully
+
+Request 13.2: Register New Driver
+----------------------------------
+curl -X POST http://localhost:8080/auth-service/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "newdriver@test.com",
+    "password": "1234",
+    "name": "Test Driver",
+    "phoneNumber": "9876543211",
+    "role": "DRIVER"
+  }'
+
+Expected: Driver registered (status: PENDING)
+
+==========================================
+14. PASSWORD RESET FLOW
+==========================================
+
+Request 14.1: Forgot Password
+------------------------------
+curl -X POST http://localhost:8080/auth-service/api/auth/forgot-password \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "h@gmail.com"
+  }'
+
+Expected: OTP sent (check console logs)
+
+Request 14.2: Verify OTP
+-------------------------
+curl -X POST http://localhost:8080/auth-service/api/auth/verify-otp \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "h@gmail.com",
+    "otp": "123456"
+  }'
+
+Expected: OTP verified
+
+Request 14.3: Reset Password
+-----------------------------
+curl -X POST http://localhost:8080/auth-service/api/auth/reset-password \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "h@gmail.com",
+    "newPassword": "newpass123"
+  }'
+
+Expected: Password reset successful
+
+==========================================
+15. BOOKING CANCELLATION
+==========================================
+
+Request 15.1: Cancel Booking (Student)
+---------------------------------------
+curl -X PUT http://localhost:8080/booking-service/api/bookings/1/cancel \
+  -H "Authorization: Bearer $STUDENT_TOKEN"
+
+Expected: Booking cancelled
+
+==========================================
+16. RIDE CANCELLATION
+==========================================
+
+Request 16.1: Cancel Ride (Driver)
+-----------------------------------
+curl -X POST http://localhost:8080/ride-service/api/rides/7/cancel \
+  -H "Authorization: Bearer $TOKEN"
+
+Expected: Ride cancelled
+
+==========================================
+17. DELETE OPERATIONS (Admin)
+==========================================
+
+Request 17.1: Delete Vehicle
+-----------------------------
+curl -X DELETE http://localhost:8080/user-service/api/vehicles/99 \
+  -H "Authorization: Bearer $TOKEN"
+
+Expected: Vehicle deleted (if exists)
+
+Request 17.2: Delete Ride
+--------------------------
+curl -X DELETE http://localhost:8080/ride-service/api/rides/99 \
+  -H "Authorization: Bearer $TOKEN"
+
+Expected: Ride deleted (if exists)
+
+Request 17.3: Delete User (Admin only)
+---------------------------------------
+curl -X DELETE http://localhost:8080/user-service/api/users/99 \
+  -H "Authorization: Bearer $ADMIN_TOKEN"
+
+Expected: User deleted (if exists)
+
+==========================================
+POSTMAN MEIN KAISE RUN KARE?
+==========================================
+
+METHOD 1: Manual - Ek Ek Request
+---------------------------------
+1. Collection import karo (CampusRide_Postman_Collection.json)
+2. Environment setup karo (baseUrl, token, userId)
+3. Authentication folder kholo
+4. "Login" request run karo
+5. Token auto-save ho jayega
+6. Baaki requests ek ek karke run karo
+
+METHOD 2: Collection Runner (Batch)
+------------------------------------
+1. Collection pe right click
+2. "Run collection" select karo
+3. Order set karo:
+   - First: Login
+   - Then: Other requests
+4. "Run CampusRide API Collection" click karo
+5. Sab requests automatically run honge
+
+METHOD 3: Newman (Command Line)
+--------------------------------
+1. Install newman:
+   npm install -g newman
+
+2. Run collection:
+   newman run CampusRide_Postman_Collection.json
+
+3. With environment:
+   newman run CampusRide_Postman_Collection.json -e environment.json
+
+==========================================
+TESTING CHECKLIST ✅
+==========================================
+
+Before Starting:
+□ All services running (check Eureka: http://localhost:8761)
+□ MySQL running (port 3306)
+□ Database 'campusride' exists
+
+Health Checks:
+□ Eureka (8761) - UP
+□ Auth (8081) - UP
+□ User (8082) - UP
+□ Ride (8083) - UP
+□ Booking (8084) - UP
+□ Gateway (8080) - UP
+
+Authentication:
+□ Login as Driver works
+□ Login as Student works
+□ Login as Admin works
+□ Token received and saved
+
+Driver Flow:
+□ Get profile works
+□ Get my vehicles works
+□ Create ride works
+□ View my rides works
+
+Student Flow:
+□ Search rides works
+□ Create booking works
+□ View my bookings works
+
+Admin Flow:
+□ Get all users works
+□ Get driver requests works
+□ Approve driver works
+□ Get/Update settings works
+
+==========================================
+ERROR CODES & SOLUTIONS
+==========================================
+
+200 OK              ✅ Success
+201 Created         ✅ Resource created
+204 No Content      ✅ Success, no data
+
+400 Bad Request     ❌ Check request body format
+401 Unauthorized    ❌ Login again, token expired
+403 Forbidden       ❌ Use correct role (admin/driver)
+404 Not Found       ❌ Invalid ID or endpoint
+500 Server Error    ❌ Check backend logs
+
+==========================================
+QUICK TERMINAL TEST SCRIPT
+==========================================
+
+Sab commands ko ek saath run karne ke liye:
+
+#!/bin/bash
+
+# Health Check
+echo "=== Health Check ==="
+curl -s http://localhost:8761 | head -5
+echo ""
+
+# Login
+echo "=== Login ==="
+RESPONSE=$(curl -s -X POST http://localhost:8080/auth-service/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"h@gmail.com","password":"1234"}')
+echo $RESPONSE | jq '.'
+
+TOKEN=$(echo $RESPONSE | jq -r '.token')
+echo "Token: ${TOKEN:0:20}..."
+echo ""
+
+# Get Profile
+echo "=== Get Profile ==="
+curl -s -X GET http://localhost:8080/user-service/api/users/profile \
+  -H "Authorization: Bearer $TOKEN" | jq '.'
+echo ""
+
+# Search Rides
+echo "=== Search Rides ==="
+curl -s -X GET "http://localhost:8080/ride-service/api/rides/search" | jq '. | length'
+echo " rides found"
+
+echo ""
+echo "✅ Basic tests completed!"
+
+Save as: test_apis.sh
+Run: chmod +x test_apis.sh && ./test_apis.sh
+
+==========================================
+SUMMARY - REQUEST COUNT
+==========================================
+
+Total Requests: 40+
+
+By Category:
+- Health Checks: 6
+- Authentication: 5
+- User Management: 4
+- Vehicle Management: 3
+- Ride Management: 10
+- Booking Management: 5
+- Admin Operations: 7
+
+By HTTP Method:
+- GET: 18
+- POST: 12
+- PUT: 7
+- DELETE: 3
+
+==========================================
+RECOMMENDED TEST ORDER
+==========================================
+
+Quick Test (5 mins):
+1. Health checks (6 requests)
+2. Login driver (1 request)
+3. Get profile (1 request)
+4. Search rides (1 request)
+5. Get my vehicles (1 request)
+Total: 10 requests
+
+Full Test (15 mins):
+1. All health checks
+2. Driver login + operations
+3. Student login + booking
+4. Admin login + operations
+Total: 30+ requests
+
+Production Test (30 mins):
+1. All requests in sequence
+2. Verify all responses
+3. Test error scenarios
+4. Check edge cases
+Total: 40+ requests
+
+==========================================
+
+Bas yeh file follow karo, sequence mein sab test ho jayenge! 🚀
+
+For Postman: Import collection and run manually
+For Terminal: Copy-paste curl commands
+For Automation: Use collection runner or newman
+
+Happy Testing! 🎉

@@ -15,15 +15,23 @@ import useAuth from '../hooks/useAuth'
 function MyRidesPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
-  const [activeTab, setActiveTab] = useState('offered')
   const [offeredRides, setOfferedRides] = useState([])
   const [bookedRides, setBookedRides] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  
+  // Determine if user is a driver - recalculate whenever user changes
+  const isDriver = user?.role === 'DRIVER'
+  const [activeTab, setActiveTab] = useState(isDriver ? 'offered' : 'booked')
+  
+  // Update active tab when role changes
+  useEffect(() => {
+    setActiveTab(isDriver ? 'offered' : 'booked')
+  }, [isDriver])
 
   useEffect(() => {
     loadMyRides()
-  }, [user?.id])
+  }, [user?.id, user?.role]) // Re-load when role changes
 
   const loadMyRides = async () => {
     if (!user?.id) return
@@ -32,13 +40,20 @@ function MyRidesPage() {
     setError('')
 
     try {
-      const [offeredResponse, bookedResponse] = await Promise.all([
-        rideApi.get(`/api/rides/driver/${user.id}`),
-        rideApi.get(`/api/rides/passenger/${user.id}`),
-      ])
-
-      setOfferedRides(offeredResponse.data)
-      setBookedRides(bookedResponse.data)
+      // Only fetch offered rides if user is a driver
+      if (isDriver) {
+        const [offeredResponse, bookedResponse] = await Promise.all([
+          rideApi.get(`/api/rides/driver/${user.id}`),
+          rideApi.get(`/api/rides/passenger/${user.id}`),
+        ])
+        setOfferedRides(offeredResponse.data)
+        setBookedRides(bookedResponse.data)
+      } else {
+        // Students only see their bookings
+        const bookedResponse = await rideApi.get(`/api/rides/passenger/${user.id}`)
+        setBookedRides(bookedResponse.data)
+        setOfferedRides([])
+      }
     } catch (err) {
       setError(
         err.response?.data?.message || 'Unable to load your rides. Please try again.'
@@ -66,37 +81,40 @@ function MyRidesPage() {
       <div className="mx-auto max-w-[1120px]">
         <div className="mb-6">
           <h1 className="m-0 text-2xl font-bold tracking-[-0.035em] text-[#12214a] sm:text-[1.8rem]">
-            My Rides
+            {isDriver ? 'My Rides' : 'My Bookings'}
           </h1>
           <p className="mt-1 text-sm text-[#647590]">
-            Manage your offered rides and bookings
+            {isDriver ? 'Manage your offered rides and bookings' : 'View and manage your ride bookings'}
           </p>
         </div>
 
-        <div className="mb-6 flex gap-2 overflow-hidden rounded-lg border border-[#e0e9f7] bg-white p-1">
-          <button
-            className={`flex-1 rounded-md px-4 py-2.5 text-sm font-bold transition ${
-              activeTab === 'offered'
-                ? 'bg-[#2563eb] text-white shadow-sm'
-                : 'text-[#647590] hover:bg-slate-50'
-            }`}
-            onClick={() => setActiveTab('offered')}
-            type="button"
-          >
-            Offered Rides ({offeredRides.length})
-          </button>
-          <button
-            className={`flex-1 rounded-md px-4 py-2.5 text-sm font-bold transition ${
-              activeTab === 'booked'
-                ? 'bg-[#2563eb] text-white shadow-sm'
-                : 'text-[#647590] hover:bg-slate-50'
-            }`}
-            onClick={() => setActiveTab('booked')}
-            type="button"
-          >
-            My Bookings ({bookedRides.length})
-          </button>
-        </div>
+        {/* Show tabs only for drivers */}
+        {isDriver ? (
+          <div className="mb-6 flex gap-2 overflow-hidden rounded-lg border border-[#e0e9f7] bg-white p-1">
+            <button
+              className={`flex-1 rounded-md px-4 py-2.5 text-sm font-bold transition ${
+                activeTab === 'offered'
+                  ? 'bg-[#2563eb] text-white shadow-sm'
+                  : 'text-[#647590] hover:bg-slate-50'
+              }`}
+              onClick={() => setActiveTab('offered')}
+              type="button"
+            >
+              Offered Rides ({offeredRides.length})
+            </button>
+            <button
+              className={`flex-1 rounded-md px-4 py-2.5 text-sm font-bold transition ${
+                activeTab === 'booked'
+                  ? 'bg-[#2563eb] text-white shadow-sm'
+                  : 'text-[#647590] hover:bg-slate-50'
+              }`}
+              onClick={() => setActiveTab('booked')}
+              type="button"
+            >
+              My Bookings ({bookedRides.length})
+            </button>
+          </div>
+        ) : null}
 
         {error && (
           <div className="mb-5 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
@@ -108,18 +126,24 @@ function MyRidesPage() {
           <div className="flex flex-col items-center rounded-2xl border border-[#e0e9f7] bg-white px-8 py-10 text-center">
             <CarFront className="text-[#647590]" size={40} />
             <p className="mt-3 max-w-md text-sm font-medium text-[#53637f]">
-              {activeTab === 'offered'
+              {isDriver && activeTab === 'offered'
                 ? 'You have not offered any rides yet. Create a ride to get started!'
                 : 'You have not booked any rides yet. Find a ride to get started!'}
             </p>
             <button
               className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#2563eb] px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-[#164bc7]"
               onClick={() =>
-                navigate(activeTab === 'offered' ? '/rides/create' : '/rides/find')
+                navigate(
+                  isDriver && activeTab === 'offered'
+                    ? '/driver/rides/create'
+                    : isDriver
+                    ? '/rides/find'
+                    : '/rides/find'
+                )
               }
               type="button"
             >
-              {activeTab === 'offered' ? 'Create Ride' : 'Find Rides'}
+              {isDriver && activeTab === 'offered' ? 'Create Ride' : 'Find Rides'}
             </button>
           </div>
         ) : (
@@ -139,6 +163,7 @@ function MyRidesPage() {
 }
 
 function RideCard({ ride, onClick }) {
+  const { user } = useAuth()
   const departureDate = new Date(ride.departureTime).toLocaleDateString('en-IN', {
     day: 'numeric',
     month: 'short',
@@ -157,6 +182,10 @@ function RideCard({ ride, onClick }) {
     CANCELLED: 'bg-red-100 text-red-700',
   }
 
+  // Check if current user is the driver or passenger
+  const isDriver = ride.driverId === user?.id
+  const isPassenger = ride.passengerId === user?.id
+
   return (
     <article
       className="group cursor-pointer overflow-hidden rounded-xl border border-[#e0e9f7] bg-white p-5 shadow-sm transition hover:border-[#2563eb] hover:shadow-md"
@@ -169,9 +198,14 @@ function RideCard({ ride, onClick }) {
           </div>
           <div>
             <p className="text-sm font-bold text-[#182950]">
-              {ride.type === 'OFFERING' ? 'You (Driver)' : 'Your Booking'}
+              {isDriver ? 'You (Driver)' : isPassenger ? 'Your Booking' : 'Ride'}
             </p>
             <p className="text-xs text-[#647590]">Ride ID: {ride.id}</p>
+            {ride.vehicleInfo?.vehicleNumber && (
+              <p className="mt-1 text-sm font-bold text-[#12214a]">
+                🚗 {ride.vehicleInfo.vehicleNumber}
+              </p>
+            )}
           </div>
         </div>
         <span

@@ -24,11 +24,12 @@ public class JwtUtil {
         this.expirationMs = expirationMs;
     }
 
-    public String generateToken(String email) {
+    public String generateToken(String email, String activeRole) {
         Date issuedAt = new Date();
         Date expiry = new Date(issuedAt.getTime() + expirationMs);
         return Jwts.builder()
                 .subject(email)
+                .claim("activeRole", activeRole)
                 .issuedAt(issuedAt)
                 .expiration(expiry)
                 .signWith(signingKey)

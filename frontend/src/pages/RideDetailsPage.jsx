@@ -4,6 +4,7 @@ import {
   AlertCircle,
   ArrowLeft,
   CalendarDays,
+  Car,
   CarFront,
   CheckCircle2,
   Clock,
@@ -49,9 +50,7 @@ function RideDetailsPage() {
     setIsActionLoading(true)
 
     try {
-      const { data } = await rideApi.patch(`/api/rides/${rideId}/accept`, {
-        passengerId: user.id,
-      })
+      const { data } = await rideApi.patch(`/api/rides/${rideId}/accept?passengerId=${user.id}`)
       setRide(data)
       setSuccess('Ride accepted successfully! The driver will be notified.')
     } catch (err) {
@@ -175,8 +174,16 @@ function RideDetailsPage() {
     <section className="bg-[#f6f9ff] px-1 py-1 sm:px-2 sm:py-2">
       <div className="mx-auto max-w-[720px]">
         <button
-          className="mb-4 inline-flex items-center gap-2 text-sm font-bold text-[#2563eb] transition hover:underline"
-          onClick={() => navigate(-1)}
+          className="mb-4 inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-bold text-[#2563eb] transition hover:bg-blue-50"
+          onClick={() => {
+            // Navigate based on user role
+            if (user?.role === 'DRIVER') {
+              navigate('/driver/rides/my')
+            } else {
+              // Student should go back to Find Rides (where they found this ride)
+              navigate('/rides/find')
+            }
+          }}
           type="button"
         >
           <ArrowLeft size={16} />
@@ -257,6 +264,22 @@ function RideDetailsPage() {
               </div>
             )}
 
+            {ride.vehicleInfo && ride.passengerId && (
+              <div className="mb-6 rounded-lg border border-[#e0e9f7] bg-[#f6f9ff] p-5">
+                <h3 className="mb-4 flex items-center gap-2 text-sm font-bold uppercase tracking-[0.035em] text-[#72829d]">
+                  <Car size={16} className="text-[#2563eb]" />
+                  Driver Vehicle Details
+                </h3>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <VehicleDetailItem label="Vehicle Number" value={ride.vehicleInfo.vehicleNumber} />
+                  <VehicleDetailItem label="Vehicle Type" value={ride.vehicleInfo.vehicleType} />
+                  <VehicleDetailItem label="Model" value={ride.vehicleInfo.vehicleModel} />
+                  <VehicleDetailItem label="Color" value={ride.vehicleInfo.vehicleColor} />
+                  <VehicleDetailItem label="Total Seats" value={ride.vehicleInfo.totalSeats} />
+                </div>
+              </div>
+            )}
+
             <div className="flex flex-wrap gap-3 border-t border-[#edf1f8] pt-6">
               {canAccept && (
                 <button
@@ -320,6 +343,15 @@ function DetailItem({ icon: Icon, iconColor = 'text-[#2563eb]', label, value }) 
         <Icon className={iconColor} size={14} />
         {label}
       </dt>
+      <dd className="text-sm font-bold text-[#182950]">{value}</dd>
+    </div>
+  )
+}
+
+function VehicleDetailItem({ label, value }) {
+  return (
+    <div>
+      <dt className="mb-1 text-xs font-semibold text-[#72829d]">{label}</dt>
       <dd className="text-sm font-bold text-[#182950]">{value}</dd>
     </div>
   )

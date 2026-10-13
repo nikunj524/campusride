@@ -1,0 +1,456 @@
+==========================================
+CAMPUSRIDE API - POSTMAN COLLECTION GUIDE
+==========================================
+
+📁 File Location:
+/Users/hardikmakwana/SpringProject/campusride/CampusRide_Postman_Collection.json
+
+==========================================
+HOW TO IMPORT IN POSTMAN
+==========================================
+
+Method 1: Direct Import
+------------------------
+1. Open Postman
+2. Click "Import" button (top left)
+3. Click "Choose Files"
+4. Select: CampusRide_Postman_Collection.json
+5. Click "Import"
+6. Done! Collection ready hai
+
+Method 2: Drag & Drop
+---------------------
+1. Open Postman
+2. Drag the JSON file directly into Postman window
+3. Done!
+
+==========================================
+SETUP ENVIRONMENT (IMPORTANT!)
+==========================================
+
+1. Postman me naya Environment banao:
+   - Click "Environments" (left sidebar)
+   - Click "+" (Create Environment)
+   - Name: "CampusRide Local"
+
+2. Variables add karo:
+   Variable Name    | Initial Value | Current Value
+   -----------------|---------------|---------------
+   baseUrl          | http://localhost:8080 | http://localhost:8080
+   token            |               |
+   userId           |               |
+
+3. Save karo
+4. Environment select karo (top right dropdown)
+
+NOTE: token aur userId auto-set honge jab tum Login karoge!
+
+==========================================
+COLLECTION STRUCTURE (FOLDERS)
+==========================================
+
+1. 🔐 Authentication (7 APIs)
+   - Register Student
+   - Register Driver
+   - Login (Auto-saves token!)
+   - Login Admin
+   - Forgot Password
+   - Verify OTP
+   - Reset Password
+
+2. 👤 User Service (5 APIs)
+   - Get Profile
+   - Update Profile
+   - Get All Users (Admin only)
+   - Get User By ID
+   - Delete User (Admin only)
+
+3. 🚗 Vehicle Service (5 APIs)
+   - Add Vehicle
+   - Get My Vehicles
+   - Get Vehicle By User ID
+   - Update Vehicle
+   - Delete Vehicle
+
+4. 🚕 Ride Service (10 APIs)
+   - Create Ride (Offering)
+   - Create Ride (Requesting)
+   - Search Rides
+   - Get All Rides
+   - Get Ride By ID
+   - Get My Rides
+   - Update Ride
+   - Delete Ride
+   - Accept Ride Request
+   - Cancel Ride
+
+5. 📋 Booking Service (5 APIs)
+   - Create Booking
+   - Get My Bookings
+   - Get Booking By ID
+   - Get Bookings By Ride ID
+   - Cancel Booking
+
+6. 🛡️ Admin Service (5 APIs)
+   - Get Driver Requests
+   - Approve Driver
+   - Reject Driver
+   - Get Admin Settings
+   - Update Admin Settings
+
+7. ❤️ Health Checks (5 APIs)
+   - Eureka Dashboard
+   - Auth Service Health
+   - Ride Service Health
+   - Booking Service Health
+   - Gateway Health
+
+==========================================
+QUICK START WORKFLOW
+==========================================
+
+Step 1: Login
+-------------
+1. Open "Authentication" folder
+2. Run "Login" request
+   Body: {
+     "email": "h@gmail.com",
+     "password": "1234"
+   }
+3. Token automatically save ho jayega environment me!
+
+Step 2: Test Profile
+--------------------
+1. Open "User Service" folder
+2. Run "Get Profile" request
+3. Tumhara profile details dikhengi
+
+Step 3: Create Ride (Driver only)
+----------------------------------
+1. Open "Ride Service" folder
+2. Run "Create Ride (Offering)" request
+3. Modify body as needed
+4. Ride create ho jayegi
+
+Step 4: Book Ride (Student)
+----------------------------
+1. Logout and login with student account
+2. Open "Booking Service" folder
+3. Run "Create Booking" request
+4. Update rideId in body
+5. Booking create ho jayegi
+
+==========================================
+TEST ACCOUNTS (PRE-EXISTING)
+==========================================
+
+Admin Account:
+--------------
+Email: admin@campusride.com
+Password: admin123
+Role: ADMIN
+Use for: Driver approval, settings, all users
+
+Driver Account:
+---------------
+Email: h@gmail.com
+Password: 1234
+Role: DRIVER
+User ID: 15
+Vehicle: GJ4W10 (Splendor)
+Use for: Create rides, manage vehicles
+
+Student Account:
+----------------
+Email: z@gmail.com
+Password: 1234
+Role: STUDENT
+User ID: 29
+Name: hardik lala
+Use for: Book rides, search rides
+
+==========================================
+AUTHENTICATION SETUP (AUTO-CONFIGURED)
+==========================================
+
+Login request me yeh script already hai:
+-----------------------------------------
+var jsonData = pm.response.json();
+pm.environment.set("token", jsonData.token);
+pm.environment.set("userId", jsonData.userId);
+
+Matlab:
+- Jab tum Login karoge
+- Token automatically save hoga
+- Baaki sab requests me token auto-use hoga
+- Manually token copy-paste ki zarurat nahi!
+
+==========================================
+AUTHORIZATION HEADER (AUTO-CONFIGURED)
+==========================================
+
+Secured endpoints me already Bearer token configured hai:
+---------------------------------------------------------
+Auth Type: Bearer Token
+Token: {{token}}
+
+Matlab tum bas Login karo, baaki sab automatic!
+
+==========================================
+SAMPLE REQUEST BODIES
+==========================================
+
+Register Student:
+-----------------
+{
+  "email": "newstudent@test.com",
+  "password": "1234",
+  "name": "New Student",
+  "phoneNumber": "9876543210",
+  "role": "STUDENT"
+}
+
+Register Driver:
+----------------
+{
+  "email": "newdriver@test.com",
+  "password": "1234",
+  "name": "New Driver",
+  "phoneNumber": "9876543211",
+  "role": "DRIVER"
+}
+
+Add Vehicle:
+------------
+{
+  "vehicleNumber": "GJ01XY9999",
+  "vehicleType": "CAR",
+  "vehicleModel": "Honda City",
+  "vehicleColor": "Silver",
+  "seatingCapacity": 4
+}
+
+Create Ride (Offering):
+-----------------------
+{
+  "type": "OFFERING",
+  "source": "Andheri",
+  "destination": "Bandra",
+  "departureTime": "2026-09-20T10:00:00",
+  "availableSeats": 3,
+  "pricePerSeat": 50.00
+}
+
+Create Booking:
+---------------
+{
+  "rideId": 7,
+  "seatsBooked": 1
+}
+
+==========================================
+COMMON ERRORS & SOLUTIONS
+==========================================
+
+Error: 401 Unauthorized
+------------------------
+Solution: 
+- Login phir se karo
+- Token expire ho gaya hoga
+- Environment me token set hai ki nahi check karo
+
+Error: 403 Forbidden
+--------------------
+Solution:
+- Tumhare role me permission nahi hai
+- Admin endpoints ke liye admin login karo
+- Driver endpoints ke liye driver login karo
+
+Error: 404 Not Found
+--------------------
+Solution:
+- API endpoint sahi hai ki nahi check karo
+- ID valid hai ki nahi check karo
+- Service running hai ki nahi check karo
+
+Error: 500 Internal Server Error
+---------------------------------
+Solution:
+- Backend logs check karo
+- Database running hai ki nahi check karo
+- Service crash to nahi hui check karo
+
+==========================================
+API ENDPOINT PATTERNS
+==========================================
+
+Gateway URL: http://localhost:8080
+
+Authentication:
+/auth-service/api/auth/*
+
+User & Vehicles:
+/user-service/api/users/*
+/user-service/api/vehicles/*
+
+Rides:
+/ride-service/api/rides/*
+
+Bookings:
+/booking-service/api/bookings/*
+
+Admin:
+/user-service/api/admin/*
+
+==========================================
+TESTING SCENARIOS
+==========================================
+
+Scenario 1: Complete Student Flow
+----------------------------------
+1. Register as Student
+2. Login
+3. Get Profile
+4. Search Rides
+5. Create Booking
+6. Get My Bookings
+
+Scenario 2: Complete Driver Flow
+---------------------------------
+1. Register as Driver (status=PENDING)
+2. Admin login karo
+3. Approve driver
+4. Driver se login karo
+5. Add Vehicle
+6. Create Ride (OFFERING)
+7. Get My Rides
+
+Scenario 3: Admin Dashboard
+----------------------------
+1. Admin login
+2. Get All Users
+3. Get Driver Requests
+4. Approve/Reject Driver
+5. Get Admin Settings
+6. Update Admin Settings
+
+==========================================
+VARIABLES REFERENCE
+==========================================
+
+Environment Variables:
+----------------------
+{{baseUrl}}  - http://localhost:8080
+{{token}}    - JWT token (auto-set on login)
+{{userId}}   - User ID (auto-set on login)
+
+Usage in URLs:
+--------------
+{{baseUrl}}/user-service/api/users/{{userId}}
+
+==========================================
+RESPONSE STATUS CODES
+==========================================
+
+200 OK              - Success
+201 Created         - Resource created successfully
+204 No Content      - Success, no data returned
+400 Bad Request     - Invalid data
+401 Unauthorized    - Token missing/invalid
+403 Forbidden       - No permission
+404 Not Found       - Resource not found
+500 Server Error    - Backend error
+
+==========================================
+TIPS & TRICKS
+==========================================
+
+1. Environment Use Karo:
+   - Local development = baseUrl: localhost:8080
+   - Production = baseUrl: production-url
+
+2. Save Responses:
+   - Right click on request
+   - "Save as Example"
+   - Future reference ke liye
+
+3. Tests Add Karo:
+   - "Tests" tab me ja kar
+   - Status code verify karo
+   - Response data validate karo
+
+4. Pre-request Scripts:
+   - Dynamic data generate karo
+   - Timestamps, random data etc.
+
+5. Collection Variables:
+   - Agar koi ID bar bar use ho rahi
+   - Variable bana lo
+   - Easy change ke liye
+
+==========================================
+FOLDER-WISE EXECUTION ORDER
+==========================================
+
+Best Practice:
+--------------
+1. First: Authentication → Login
+2. Then: User Service → Get Profile (verify token)
+3. Then: Any other folder as needed
+4. Health Checks: Anytime service status check karne ke liye
+
+==========================================
+SUPPORT & TROUBLESHOOTING
+==========================================
+
+Services Not Running?
+---------------------
+Check: http://localhost:8761 (Eureka Dashboard)
+All 5 services UP hone chahiye:
+- AUTH-SERVICE
+- USER-SERVICE
+- RIDE-SERVICE
+- BOOKING-SERVICE
+- API-GATEWAY
+
+Database Issues?
+----------------
+- MySQL running hai ki nahi
+- Database name: campusride
+- Port: 3306
+- User: root (no password)
+
+Token Issues?
+-------------
+- Environment select kiya hai?
+- Login successful tha?
+- Token environment me save hua?
+- Token expire to nahi hua? (24 hours validity)
+
+==========================================
+ADDITIONAL RESOURCES
+==========================================
+
+Project Documentation:
+/Users/hardikmakwana/SpringProject/campusride/RIDE_AND_BOOKING_SERVICES_DOCUMENTATION.txt
+
+Service URLs:
+- Eureka: http://localhost:8761
+- Auth: http://localhost:8081
+- User: http://localhost:8082
+- Ride: http://localhost:8083
+- Booking: http://localhost:8084
+- Gateway: http://localhost:8080
+- Frontend: http://localhost:5174
+
+==========================================
+HAPPY TESTING! 🚀
+==========================================
+
+Agar koi problem ho to:
+1. Health checks run karo
+2. Eureka dashboard dekho
+3. Service logs check karo
+4. Database connection verify karo
+
+All the best! 👍

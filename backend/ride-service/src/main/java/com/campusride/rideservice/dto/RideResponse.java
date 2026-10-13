@@ -18,6 +18,7 @@ public record RideResponse(
         BigDecimal pricePerSeat,
         RideStatus status,
         String notes,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        VehicleInfo vehicleInfo
 ) {
 }

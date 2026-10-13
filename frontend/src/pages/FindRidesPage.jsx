@@ -11,9 +11,11 @@ import {
   UserRound,
 } from 'lucide-react'
 import { rideApi } from '../api/client'
+import useAuth from '../hooks/useAuth'
 
 function FindRidesPage() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [rides, setRides] = useState([])
   const [filteredRides, setFilteredRides] = useState([])
   const [isLoading, setIsLoading] = useState(true)
@@ -26,28 +28,10 @@ function FindRidesPage() {
 
   useEffect(() => {
     loadAvailableRides()
-  }, [])
+  }, [user?.id]) // Re-load when user changes
 
-  const loadAvailableRides = async () => {
-    setIsLoading(true)
-    setError('')
-    try {
-      const { data } = await rideApi.post('/api/rides/search', {
-        type: 'OFFERING',
-        status: 'PENDING',
-      })
-      setRides(data)
-      setFilteredRides(data)
-    } catch (err) {
-      setError(err.response?.data?.message || 'Unable to load rides. Please try again.')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleSearch = (e) => {
-    e.preventDefault()
-    
+  // Real-time filtering - runs whenever searchForm changes
+  useEffect(() => {
     let filtered = rides
 
     if (searchForm.source) {
@@ -69,11 +53,40 @@ function FindRidesPage() {
     }
 
     setFilteredRides(filtered)
+  }, [searchForm, rides]) // Re-filter when search form or rides change
+
+  const loadAvailableRides = async () => {
+    setIsLoading(true)
+    setError('')
+    try {
+      const { data } = await rideApi.post('/api/rides/search', {
+        type: 'OFFERING',
+        status: 'PENDING',
+      })
+      
+      // Filter out current user's own rides (if they are a driver)
+      // Only filter if user is logged in
+      const availableRides = user?.id 
+        ? data.filter(ride => ride.driverId !== user.id)
+        : data
+      
+      setRides(availableRides)
+      setFilteredRides(availableRides)
+    } catch (err) {
+      setError(err.response?.data?.message || 'Unable to load rides. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleSearch = (e) => {
+    e.preventDefault()
+    // Filtering is now automatic via useEffect, this just prevents form submission
   }
 
   const handleReset = () => {
     setSearchForm({ source: '', destination: '', date: '' })
-    setFilteredRides(rides)
+    // Filtering will happen automatically via useEffect
   }
 
   if (isLoading) {
@@ -169,6 +182,13 @@ function FindRidesPage() {
           </div>
         )}
 
+        {/* Show results count */}
+        {(searchForm.source || searchForm.destination || searchForm.date) && (
+          <div className="mb-4 text-sm text-[#647590]">
+            Found <span className="font-bold text-[#2563eb]">{filteredRides.length}</span> {filteredRides.length === 1 ? 'ride' : 'rides'} matching your search
+          </div>
+        )}
+
         {filteredRides.length === 0 ? (
           <div className="flex flex-col items-center rounded-2xl border border-[#e0e9f7] bg-white px-8 py-10 text-center">
             <CarFront className="text-[#647590]" size={40} />
@@ -212,6 +232,11 @@ function RideCard({ ride, onClick }) {
           <div>
             <p className="text-sm font-bold text-[#182950]">Driver</p>
             <p className="text-xs text-[#647590]">ID: {ride.driverId}</p>
+            {ride.vehicleInfo?.vehicleNumber && (
+              <p className="mt-1 text-sm font-bold text-[#12214a]">
+                🚗 {ride.vehicleInfo.vehicleNumber}
+              </p>
+            )}
           </div>
         </div>
         <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-700">

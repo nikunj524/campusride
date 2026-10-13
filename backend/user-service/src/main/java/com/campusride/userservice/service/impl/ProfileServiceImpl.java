@@ -9,6 +9,8 @@ import com.campusride.userservice.service.ProfileService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @Transactional(readOnly = true)
 public class ProfileServiceImpl implements ProfileService {
@@ -17,6 +19,13 @@ public class ProfileServiceImpl implements ProfileService {
 
     public ProfileServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
+    }
+
+    @Override
+    public List<ProfileResponse> getAllUsers() {
+        return userRepository.findAll().stream()
+                .map(this::toProfileResponse)
+                .toList();
     }
 
     @Override
@@ -44,7 +53,9 @@ public class ProfileServiceImpl implements ProfileService {
                 user.getLastName(),
                 user.getEmail(),
                 user.getPhoneNumber(),
-                user.getRole()
+                user.getRole(),
+                user.isDriverEligible(),
+                user.getCreatedAt()
         );
     }
 }

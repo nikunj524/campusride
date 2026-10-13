@@ -3,6 +3,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
   Bell,
   Bike,
+  CalendarDays,
   CarFront,
   CircleHelp,
   LayoutDashboard,
@@ -15,9 +16,12 @@ import {
   X,
 } from 'lucide-react'
 import useAuth from '../hooks/useAuth'
+import ConfirmDialog from './ConfirmDialog'
 
 const navigation = [
   { label: 'Dashboard', to: '/driver/dashboard', icon: LayoutDashboard },
+  { label: 'Create Ride', to: '/driver/rides/create', icon: Bike },
+  { label: 'My Rides', to: '/driver/rides/my', icon: CalendarDays },
   { label: 'Vehicle', to: '/driver/vehicles', icon: CarFront },
   { label: 'Profile', to: '/driver/profile', icon: UserRound },
 ]
@@ -53,13 +57,18 @@ function DriverSidebar({ isOpen, onNavigate }) {
   const { logout, switchWorkspace } = useAuth()
   const navigate = useNavigate()
   const [isSwitching, setIsSwitching] = useState(false)
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false)
 
   const handleLogout = () => {
     logout()
     navigate('/')
   }
 
-  const handleSwitchToStudent = async () => {
+  const handleSwitchToStudent = () => {
+    setShowConfirmDialog(true)
+  }
+
+  const confirmSwitchToStudent = async () => {
     try {
       setIsSwitching(true)
       await switchWorkspace('STUDENT')
@@ -108,6 +117,18 @@ function DriverSidebar({ isOpen, onNavigate }) {
         <button className="sidebar-link" onClick={handleLogout} type="button"><LogOut size={18} />Logout</button>
         <div className="sidebar-help"><CircleHelp size={19} /><div><strong>Need help?</strong><span>Contact support</span></div></div>
       </div>
+
+      {/* Custom Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={showConfirmDialog}
+        onClose={() => setShowConfirmDialog(false)}
+        onConfirm={confirmSwitchToStudent}
+        title="Switch to Student Mode?"
+        message="You will be redirected to the student dashboard. Any unsaved changes on this page will be lost. Are you sure you want to continue?"
+        confirmText="Switch to Student"
+        cancelText="Cancel"
+        variant="warning"
+      />
     </aside>
   )
 }

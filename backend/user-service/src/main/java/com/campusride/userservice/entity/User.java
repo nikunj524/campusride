@@ -44,6 +44,9 @@ public class User {
     @Column(nullable = false, length = 20)
     private Role role;
 
+    @Column(name = "driver_eligible")
+    private Boolean driverEligible;
+
     @Column(name = "password_reset_otp_hash", length = 100)
     private String passwordResetOtpHash;
 
@@ -60,5 +63,17 @@ public class User {
         this.firstName = firstName;
         this.lastName = lastName;
         this.phoneNumber = phoneNumber;
+    }
+
+    public boolean isDriverEligible() {
+        return role == Role.DRIVER || Boolean.TRUE.equals(driverEligible);
+    }
+
+    public void approveDriverEligibility() {
+        this.driverEligible = true;
+    }
+
+    public void revokeDriverEligibility() {
+        this.driverEligible = false;
     }
 }

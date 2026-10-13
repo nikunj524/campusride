@@ -33,6 +33,11 @@ public class RideController {
         return ResponseEntity.status(HttpStatus.CREATED).body(rideService.createRide(request));
     }
 
+    @GetMapping
+    public ResponseEntity<List<RideResponse>> getAllAvailableRides() {
+        return ResponseEntity.ok(rideService.getAllAvailableRides());
+    }
+
     @GetMapping("/{rideId}")
     public ResponseEntity<RideResponse> getRide(@PathVariable Long rideId) {
         return ResponseEntity.ok(rideService.getRide(rideId));

@@ -28,6 +28,14 @@ function CreateRidePage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
+  // Get minimum datetime (current time)
+  const getMinDateTime = () => {
+    const now = new Date()
+    // Add 10 minutes buffer
+    now.setMinutes(now.getMinutes() + 10)
+    return now.toISOString().slice(0, 16)
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
@@ -49,12 +57,23 @@ function CreateRidePage() {
       const { data } = await rideApi.post('/api/rides', rideData)
       setSuccess('Ride created successfully!')
       setTimeout(() => {
-        navigate(`/rides/${data.id}`)
+        // Redirect based on user role
+        const redirectPath = user?.role === 'DRIVER' 
+          ? `/driver/rides/my` 
+          : `/rides/${data.id}`
+        navigate(redirectPath)
       }, 1500)
     } catch (err) {
-      setError(
-        err.response?.data?.message || 'Failed to create ride. Please try again.'
-      )
+      const fieldErrors = err.response?.data?.fieldErrors
+      if (fieldErrors) {
+        // Display first field error
+        const firstError = Object.values(fieldErrors)[0]
+        setError(firstError || 'Validation failed. Please check your inputs.')
+      } else {
+        setError(
+          err.response?.data?.message || 'Failed to create ride. Please try again.'
+        )
+      }
     } finally {
       setIsSubmitting(false)
     }
@@ -139,11 +158,15 @@ function CreateRidePage() {
                     className="w-full rounded-lg border border-[#cfdbec] bg-white px-3.5 py-2.5 text-sm font-medium text-[#162750] outline-none transition focus:border-[#2563eb] focus:ring-4 focus:ring-[#e5efff]"
                     required
                     type="datetime-local"
+                    min={getMinDateTime()}
                     value={form.departureTime}
                     onChange={(e) =>
                       setForm({ ...form, departureTime: e.target.value })
                     }
                   />
+                  <p className="mt-1.5 text-xs text-[#7b8ca7]">
+                    Departure time must be at least 10 minutes in the future
+                  </p>
                 </label>
 
                 <label className="block">

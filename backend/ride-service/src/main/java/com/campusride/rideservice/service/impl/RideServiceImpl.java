@@ -20,9 +20,11 @@ import java.util.List;
 public class RideServiceImpl implements RideService {
 
     private final RideRepository rideRepository;
+    private final com.campusride.rideservice.client.UserServiceClient userServiceClient;
 
-    public RideServiceImpl(RideRepository rideRepository) {
+    public RideServiceImpl(RideRepository rideRepository, com.campusride.rideservice.client.UserServiceClient userServiceClient) {
         this.rideRepository = rideRepository;
+        this.userServiceClient = userServiceClient;
     }
 
     @Override
@@ -46,6 +48,17 @@ public class RideServiceImpl implements RideService {
     @Override
     public RideResponse getRide(Long rideId) {
         return toResponse(findRide(rideId));
+    }
+
+    @Override
+    public List<RideResponse> getAllAvailableRides() {
+        return rideRepository.findByTypeAndStatusAndDepartureTimeAfter(
+                com.campusride.rideservice.enums.RideType.OFFERING,
+                RideStatus.PENDING,
+                LocalDateTime.now()
+        ).stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     @Override
@@ -124,6 +137,13 @@ public class RideServiceImpl implements RideService {
     }
 
     private RideResponse toResponse(Ride ride) {
+        com.campusride.rideservice.dto.VehicleInfo vehicleInfo = null;
+        
+        // Fetch vehicle info if ride has a driver
+        if (ride.getDriverId() != null) {
+            vehicleInfo = userServiceClient.getDriverVehicle(ride.getDriverId());
+        }
+        
         return new RideResponse(
                 ride.getId(),
                 ride.getDriverId(),
@@ -136,7 +156,8 @@ public class RideServiceImpl implements RideService {
                 ride.getPricePerSeat(),
                 ride.getStatus(),
                 ride.getNotes(),
-                ride.getCreatedAt()
+                ride.getCreatedAt(),
+                vehicleInfo
         );
     }
 

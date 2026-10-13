@@ -134,7 +134,8 @@ public class AuthenticationService implements AuthService {
     }
 
     private AuthenticationResponse authenticationResponse(User user) {
-        return new AuthenticationResponse(jwtUtil.generateToken(user.getEmail()), "Bearer", toProfile(user));
+        String activeRole = user.getRole().name();
+        return new AuthenticationResponse(jwtUtil.generateToken(user.getEmail(), activeRole), "Bearer", toProfile(user));
     }
 
     private UserProfileResponse toProfile(User user) {

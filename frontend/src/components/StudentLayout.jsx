@@ -1,9 +1,10 @@
-import { useState } from 'react'
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom'
 import {
   Bike,
   CalendarDays,
   CircleHelp,
+  Clock,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -15,6 +16,7 @@ import {
   Bell,
 } from 'lucide-react'
 import useAuth from '../hooks/useAuth'
+import ConfirmDialog from './ConfirmDialog'
 
 const navigation = [
   { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
@@ -51,9 +53,72 @@ function StudentLayout() {
 }
 
 function StudentSidebar({ isOpen, onNavigate }) {
-  const { logout, switchWorkspace } = useAuth()
+  const { logout, switchWorkspace, user } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [isSwitching, setIsSwitching] = useState(false)
+  const [driverRequestStatus, setDriverRequestStatus] = useState(null)
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false)
+
+  useEffect(() => {
+    // Check driver request status
+    const checkDriverRequest = async () => {
+      try {
+        const response = await fetch('http://localhost:8082/api/driver-requests/my-status', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('campusride_token')}`
+          }
+        })
+        const data = await response.json()
+        setDriverRequestStatus(data?.status || null)
+      } catch (error) {
+        setDriverRequestStatus(null)
+      }
+    }
+    
+    if (user?.role === 'STUDENT') {
+      checkDriverRequest()
+      
+      // Re-check when page becomes visible (user switches tabs/windows)
+      const handleVisibilityChange = () => {
+        if (!document.hidden) {
+          checkDriverRequest()
+        }
+      }
+      
+      document.addEventListener('visibilitychange', handleVisibilityChange)
+      
+      // Also check periodically (every 30 seconds)
+      const interval = setInterval(checkDriverRequest, 30000)
+      
+      return () => {
+        clearInterval(interval)
+        document.removeEventListener('visibilitychange', handleVisibilityChange)
+      }
+    }
+  }, [user])
+
+  // Force refresh when navigating from BecomeDriverPage
+  useEffect(() => {
+    if (location.state?.refreshDriverStatus) {
+      const checkStatus = async () => {
+        try {
+          const response = await fetch('http://localhost:8082/api/driver-requests/my-status', {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('campusride_token')}`
+            }
+          })
+          const data = await response.json()
+          setDriverRequestStatus(data?.status || null)
+        } catch (error) {
+          setDriverRequestStatus(null)
+        }
+      }
+      checkStatus()
+      // Clear the state to avoid re-triggering
+      window.history.replaceState({}, document.title)
+    }
+  }, [location])
 
   const handleLogout = () => {
     logout()
@@ -61,6 +126,20 @@ function StudentSidebar({ isOpen, onNavigate }) {
   }
 
   const handleSwitchToDriver = async () => {
+    if (driverRequestStatus === 'APPROVED') {
+      // Show custom confirmation dialog
+      setShowConfirmDialog(true)
+    } else if (driverRequestStatus === 'PENDING') {
+      alert('Your driver request is pending admin approval. Please wait for confirmation.')
+    } else if (driverRequestStatus === 'REJECTED') {
+      alert('Your previous driver request was rejected. Please contact support for more information.')
+    } else {
+      // No request exists, show become driver modal/page
+      navigate('/become-driver')
+    }
+  }
+
+  const confirmSwitchToDriver = async () => {
     try {
       setIsSwitching(true)
       await switchWorkspace('DRIVER')
@@ -72,6 +151,23 @@ function StudentSidebar({ isOpen, onNavigate }) {
       setIsSwitching(false)
     }
   }
+
+  const getButtonText = () => {
+    if (isSwitching) return 'Switching...'
+    if (driverRequestStatus === 'PENDING') return 'Request Pending'
+    if (driverRequestStatus === 'APPROVED') return 'Switch to Driver'
+    if (driverRequestStatus === 'REJECTED') return 'Request Rejected'
+    return 'Become a Driver'
+  }
+
+  const getButtonIcon = () => {
+    if (driverRequestStatus === 'PENDING') return Clock
+    if (driverRequestStatus === 'APPROVED') return Shuffle
+    if (driverRequestStatus === 'REJECTED') return X
+    return UserRound
+  }
+
+  const ButtonIcon = getButtonIcon()
 
   return (
     <aside className={`student-sidebar ${isOpen ? 'is-open' : ''}`}>
@@ -87,17 +183,38 @@ function StudentSidebar({ isOpen, onNavigate }) {
       <button 
         className="sidebar-link" 
         onClick={handleSwitchToDriver}
-        disabled={isSwitching}
+        disabled={isSwitching || driverRequestStatus === 'REJECTED'}
         type="button"
+        title={
+          driverRequestStatus === 'PENDING' 
+            ? 'Your request is pending approval' 
+            : driverRequestStatus === 'REJECTED' 
+            ? 'Your request was rejected. Contact support.' 
+            : driverRequestStatus === 'APPROVED'
+            ? 'Switch to driver mode'
+            : 'Apply to become a driver'
+        }
       >
-        <Shuffle size={18} />
-        {isSwitching ? 'Switching...' : 'Switch to Driver'}
+        <ButtonIcon size={18} />
+        {getButtonText()}
       </button>
       <div className="sidebar-bottom">
         <button className="sidebar-link sidebar-placeholder" title="Settings will be available soon" type="button"><Settings size={18} />Settings</button>
         <button className="sidebar-link" onClick={handleLogout} type="button"><LogOut size={18} />Logout</button>
         <div className="sidebar-help"><CircleHelp size={19} /><div><strong>Need help?</strong><span>Contact support</span></div></div>
       </div>
+
+      {/* Custom Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={showConfirmDialog}
+        onClose={() => setShowConfirmDialog(false)}
+        onConfirm={confirmSwitchToDriver}
+        title="Switch to Driver Mode?"
+        message="You will be redirected to the driver dashboard where you can manage your rides and passengers. Are you sure you want to continue?"
+        confirmText="Switch to Driver"
+        cancelText="Cancel"
+        variant="primary"
+      />
     </aside>
   )
 }

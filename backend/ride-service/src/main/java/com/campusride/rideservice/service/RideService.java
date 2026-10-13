@@ -9,6 +9,7 @@ import java.util.List;
 public interface RideService {
     RideResponse createRide(CreateRideRequest request);
     RideResponse getRide(Long rideId);
+    List<RideResponse> getAllAvailableRides();
     List<RideResponse> searchRides(SearchRideRequest request);
     RideResponse acceptRide(Long rideId, Long passengerId);
     RideResponse startRide(Long rideId);
