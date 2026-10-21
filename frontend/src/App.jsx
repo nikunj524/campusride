@@ -6,8 +6,6 @@ import DriverLayout from './components/DriverLayout'
 import Navbar from './components/Navbar'
 import ProtectedRoute from './components/ProtectedRoute'
 import StudentLayout from './components/StudentLayout'
-import DriverLayout from './components/DriverLayout'
-import AdminLayout from './components/AdminLayout'
 import AdminDashboard from './pages/AdminDashboard'
 import AdminDriverRequests from './pages/AdminDriverRequests'
 import AdminUsers from './pages/AdminUsers'
@@ -53,9 +51,8 @@ function AppContent() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route element={<ProtectedRoute />}>
-            <Route element={<WorkspaceLayout />}>
+            <Route element={<StudentLayout />}>
               <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="/admin/driver-requests" element={<AdminDriverRequestsPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/become-driver" element={<BecomeDriverPage />} />
               <Route path="/rides/find" element={<FindRidesPage />} />
