@@ -4,16 +4,21 @@ const SESSION_KEY = 'campusride_session'
 const TOKEN_KEY = 'campusride_token'
 
 function getStoredToken() {
+  const currentToken = localStorage.getItem(TOKEN_KEY)
+  if (currentToken) {
+    return currentToken
+  }
+
   try {
     const session = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null')
     if (session?.token) {
       return session.token
     }
   } catch {
-    // Fall back to the legacy token key below.
+    // Ignore an invalid legacy session value.
   }
 
-  return localStorage.getItem(TOKEN_KEY)
+  return null
 }
 
 function createApiClient(baseURL) {
