@@ -80,9 +80,33 @@ CREATE TABLE `rides` (
   `price_per_seat` decimal(10,2) DEFAULT NULL,
   `source` varchar(255) NOT NULL,
   `status` enum('ACCEPTED','CANCELLED','COMPLETED','PENDING','STARTED') NOT NULL,
+  `total_seats` int DEFAULT NULL,
+  `reserved_seats` int DEFAULT NULL,
+  `capacity_review_required` bit(1) DEFAULT b'0',
   `type` enum('OFFERING','REQUESTING') NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ride_reservations`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE IF NOT EXISTS `ride_reservations` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `ride_id` bigint NOT NULL,
+  `booking_id` bigint NOT NULL,
+  `passenger_id` bigint NOT NULL,
+  `seats` int NOT NULL,
+  `status` enum('ACTIVE','RELEASED') NOT NULL,
+  `created_at` datetime(6) NOT NULL,
+  `updated_at` datetime(6) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_ride_reservations_booking_id` (`booking_id`),
+  KEY `idx_ride_reservations_ride_id` (`ride_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --

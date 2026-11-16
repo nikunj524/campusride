@@ -50,7 +50,7 @@ function AppContent() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route element={<ProtectedRoute />}>
+          <Route element={<ProtectedRoute allowedRoles={['STUDENT']} />}>
             <Route element={<StudentLayout />}>
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/profile" element={<ProfilePage />} />
@@ -60,14 +60,20 @@ function AppContent() {
               <Route path="/rides/my" element={<MyRidesPage />} />
               <Route path="/rides/:rideId" element={<RideDetailsPage />} />
             </Route>
+          </Route>
+          <Route element={<ProtectedRoute allowedRoles={['DRIVER']} />}>
             <Route element={<DriverLayout />}>
               <Route path="/driver/dashboard" element={<DashboardPage />} />
               <Route path="/driver/profile" element={<ProfilePage />} />
               <Route path="/driver/vehicles" element={<VehiclePage />} />
+              <Route path="/driver/rides/find" element={<FindRidesPage />} />
+              <Route path="/driver/rides/find/:rideId" element={<RideDetailsPage />} />
               <Route path="/driver/rides/create" element={<CreateRidePage />} />
               <Route path="/driver/rides/my" element={<MyRidesPage />} />
               <Route path="/driver/rides/:rideId" element={<RideDetailsPage />} />
             </Route>
+          </Route>
+          <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
             <Route element={<AdminLayout />}>
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
               <Route path="/admin/driver-requests" element={<AdminDriverRequests />} />

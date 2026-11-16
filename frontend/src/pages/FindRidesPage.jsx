@@ -199,7 +199,11 @@ function FindRidesPage() {
         ) : (
           <div className="grid gap-4 sm:grid-cols-2">
             {filteredRides.map((ride) => (
-              <RideCard key={ride.id} ride={ride} onClick={() => navigate(`/rides/${ride.id}`)} />
+              <RideCard
+                key={ride.id}
+                ride={ride}
+                onClick={() => navigate(user?.role === 'DRIVER' ? `/driver/rides/find/${ride.id}` : `/rides/${ride.id}`)}
+              />
             ))}
           </div>
         )}

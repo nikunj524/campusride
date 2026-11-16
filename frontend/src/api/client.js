@@ -44,4 +44,8 @@ export const userApi = createApiClient(import.meta.env.VITE_USER_API_URL || 'htt
 
 export const rideApi = createApiClient(import.meta.env.VITE_RIDE_API_URL || 'http://localhost:8083')
 
+export const bookingApi = createApiClient(
+  import.meta.env.VITE_BOOKING_API_URL || 'http://localhost:8084'
+)
+
 export default api

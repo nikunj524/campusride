@@ -3,18 +3,19 @@ package com.campusride.rideservice.service;
 import com.campusride.rideservice.dto.CreateRideRequest;
 import com.campusride.rideservice.dto.RideResponse;
 import com.campusride.rideservice.dto.SearchRideRequest;
+import com.campusride.rideservice.security.AuthenticatedUser;
 
 import java.util.List;
 
 public interface RideService {
-    RideResponse createRide(CreateRideRequest request);
-    RideResponse getRide(Long rideId);
-    List<RideResponse> getAllAvailableRides();
-    List<RideResponse> searchRides(SearchRideRequest request);
-    RideResponse acceptRide(Long rideId, Long passengerId);
-    RideResponse startRide(Long rideId);
-    RideResponse completeRide(Long rideId);
-    RideResponse cancelRide(Long rideId);
-    List<RideResponse> getDriverRides(Long driverId);
-    List<RideResponse> getPassengerRides(Long passengerId);
+    RideResponse createRide(CreateRideRequest request, AuthenticatedUser currentUser);
+    RideResponse getRide(Long rideId, AuthenticatedUser currentUser);
+    List<RideResponse> getAllAvailableRides(AuthenticatedUser currentUser);
+    List<RideResponse> searchRides(SearchRideRequest request, AuthenticatedUser currentUser);
+    RideResponse acceptRide(Long rideId, Long passengerId, AuthenticatedUser currentUser);
+    RideResponse startRide(Long rideId, AuthenticatedUser currentUser);
+    RideResponse completeRide(Long rideId, AuthenticatedUser currentUser);
+    RideResponse cancelRide(Long rideId, AuthenticatedUser currentUser);
+    List<RideResponse> getDriverRides(Long driverId, AuthenticatedUser currentUser);
+    List<RideResponse> getPassengerRides(Long passengerId, AuthenticatedUser currentUser);
 }

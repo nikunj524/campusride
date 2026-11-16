@@ -9,7 +9,7 @@ import {
   MapPin,
   UserRound,
 } from 'lucide-react'
-import { rideApi } from '../api/client'
+import { bookingApi, rideApi } from '../api/client'
 import useAuth from '../hooks/useAuth'
 
 function MyRidesPage() {
@@ -40,18 +40,22 @@ function MyRidesPage() {
     setError('')
 
     try {
-      // Only fetch offered rides if user is a driver
+      // Drivers see rides they offer and the bookings made against those rides.
       if (isDriver) {
-        const [offeredResponse, bookedResponse] = await Promise.all([
-          rideApi.get(`/api/rides/driver/${user.id}`),
-          rideApi.get(`/api/rides/passenger/${user.id}`),
-        ])
+        const offeredResponse = await rideApi.get(`/api/rides/driver/${user.id}`)
+        const bookingResponses = await Promise.all(
+          offeredResponse.data.map((ride) => bookingApi.get(`/api/bookings/ride/${ride.id}`))
+        )
         setOfferedRides(offeredResponse.data)
-        setBookedRides(bookedResponse.data)
+        setBookedRides(await Promise.all(
+          bookingResponses
+            .flatMap((response) => response.data)
+            .map(loadRideForBooking)
+        ))
       } else {
-        // Students only see their bookings
-        const bookedResponse = await rideApi.get(`/api/rides/passenger/${user.id}`)
-        setBookedRides(bookedResponse.data)
+        // Passenger booking records are the source of truth for this list.
+        const bookedResponse = await bookingApi.get(`/api/bookings/passenger/${user.id}`)
+        setBookedRides(await Promise.all(bookedResponse.data.map(loadRideForBooking)))
         setOfferedRides([])
       }
     } catch (err) {
@@ -60,6 +64,18 @@ function MyRidesPage() {
       )
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const loadRideForBooking = async (booking) => {
+    const { data: ride } = await rideApi.get(`/api/rides/${booking.rideId}`)
+    return {
+      ...ride,
+      bookingId: booking.id,
+      bookingStatus: booking.status,
+      bookedSeats: booking.seats,
+      totalPrice: booking.totalPrice,
+      passengerId: booking.passengerId,
     }
   }
 
@@ -137,7 +153,7 @@ function MyRidesPage() {
                   isDriver && activeTab === 'offered'
                     ? '/driver/rides/create'
                     : isDriver
-                    ? '/rides/find'
+                    ? '/driver/rides/find'
                     : '/rides/find'
                 )
               }
@@ -152,7 +168,7 @@ function MyRidesPage() {
               <RideCard
                 key={ride.id}
                 ride={ride}
-                onClick={() => navigate(`/rides/${ride.id}`)}
+                onClick={() => navigate(isDriver ? `/driver/rides/${ride.id}` : `/rides/${ride.id}`)}
               />
             ))}
           </div>
@@ -210,10 +226,10 @@ function RideCard({ ride, onClick }) {
         </div>
         <span
           className={`rounded-full px-3 py-1 text-xs font-bold ${
-            statusColors[ride.status] || 'bg-gray-100 text-gray-700'
+            statusColors[ride.bookingStatus || ride.status] || 'bg-gray-100 text-gray-700'
           }`}
         >
-          {ride.status}
+          {ride.bookingStatus || ride.status}
         </span>
       </div>
 

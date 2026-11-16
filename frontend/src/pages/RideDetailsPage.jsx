@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   AlertCircle,
   ArrowLeft,
@@ -14,12 +14,13 @@ import {
   UserRound,
   X,
 } from 'lucide-react'
-import { rideApi } from '../api/client'
+import { bookingApi, rideApi } from '../api/client'
 import useAuth from '../hooks/useAuth'
 
 function RideDetailsPage() {
   const { rideId } = useParams()
   const { user } = useAuth()
+  const location = useLocation()
   const navigate = useNavigate()
   const [ride, setRide] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -50,11 +51,15 @@ function RideDetailsPage() {
     setIsActionLoading(true)
 
     try {
-      const { data } = await rideApi.patch(`/api/rides/${rideId}/accept?passengerId=${user.id}`)
-      setRide(data)
-      setSuccess('Ride accepted successfully! The driver will be notified.')
+      await bookingApi.post('/api/bookings', {
+        rideId: Number(rideId),
+        passengerId: user.id,
+        seats: 1,
+      })
+      await loadRideDetails()
+      setSuccess('Ride booked successfully! The driver will be notified.')
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to accept ride.')
+      setError(err.response?.data?.message || 'Failed to book ride.')
     } finally {
       setIsActionLoading(false)
     }
@@ -145,6 +150,12 @@ function RideDetailsPage() {
 
   const isDriver = ride.driverId === user.id
   const isPassenger = ride.passengerId === user.id
+  const isDriverSearchRoute = location.pathname.startsWith('/driver/rides/find/')
+
+  if (user?.role === 'DRIVER' && !isDriver && !isDriverSearchRoute) {
+    return <Navigate to="/driver/rides/my" replace />
+  }
+
   const canAccept = !isDriver && ride.status === 'PENDING' && !ride.passengerId
   const canStart = isDriver && ride.status === 'ACCEPTED'
   const canComplete = isDriver && ride.status === 'STARTED'
@@ -178,7 +189,7 @@ function RideDetailsPage() {
           onClick={() => {
             // Navigate based on user role
             if (user?.role === 'DRIVER') {
-              navigate('/driver/rides/my')
+              navigate(isDriverSearchRoute ? '/driver/rides/find' : '/driver/rides/my')
             } else {
               // Student should go back to Find Rides (where they found this ride)
               navigate('/rides/find')

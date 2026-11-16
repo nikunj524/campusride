@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft,
   Car,
@@ -17,6 +17,16 @@ function BecomeDriverPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+
+  const dashboardByRole = {
+    DRIVER: '/driver/dashboard',
+    ADMIN: '/admin/dashboard',
+    STUDENT: '/dashboard',
+  }
+
+  if (user?.role !== 'STUDENT') {
+    return <Navigate to={dashboardByRole[user?.role] || '/login'} replace />
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -171,7 +181,7 @@ function BecomeDriverPage() {
                   </div>
                   <div>
                     <p className="text-xs font-medium text-[#647590]">Account Type</p>
-                    <p className="mt-1 text-sm font-bold text-[#182950]">Student</p>
+                    <p className="mt-1 text-sm font-bold text-[#182950]">{user.role}</p>
                   </div>
                 </div>
               </div>

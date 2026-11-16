@@ -54,6 +54,16 @@ public class Ride {
     @Column(nullable = false)
     private Integer availableSeats;
 
+    @Column
+    private Integer totalSeats;
+
+    @Column
+    private Integer reservedSeats;
+
+    @Column
+    @Builder.Default
+    private Boolean capacityReviewRequired = false;
+
     @Column(precision = 10, scale = 2)
     private BigDecimal pricePerSeat;
 
@@ -72,6 +82,37 @@ public class Ride {
     public void acceptRide(Long passengerId) {
         this.passengerId = passengerId;
         this.status = RideStatus.ACCEPTED;
+    }
+
+    public void initializeCapacity(Integer totalSeats) {
+        if (totalSeats == null || totalSeats < 0) {
+            throw new IllegalArgumentException("Total seats must be zero or greater");
+        }
+        this.totalSeats = totalSeats;
+        this.reservedSeats = 0;
+        this.availableSeats = totalSeats;
+    }
+
+    public void applyVerifiedReservation(Integer seats) {
+        if (totalSeats == null || seats == null || seats < 1 || seats > totalSeats) {
+            throw new IllegalArgumentException("Verified reservation seats must fit within total seats");
+        }
+        this.reservedSeats = seats;
+        this.availableSeats = totalSeats - reservedSeats;
+    }
+
+    public boolean hasCompleteAndConsistentCapacity() {
+        return totalSeats != null && reservedSeats != null && availableSeats != null
+                && totalSeats >= 0 && reservedSeats >= 0 && reservedSeats <= totalSeats
+                && availableSeats.equals(totalSeats - reservedSeats);
+    }
+
+    public boolean requiresCapacityReview() {
+        return Boolean.TRUE.equals(capacityReviewRequired);
+    }
+
+    public void markCapacityReviewRequired() {
+        this.capacityReviewRequired = true;
     }
 
     public void startRide() {
