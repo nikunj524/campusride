@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   ArrowRight,
@@ -22,18 +22,22 @@ function MyRidesPage() {
   
   // Determine if user is a driver - recalculate whenever user changes
   const isDriver = user?.role === 'DRIVER'
-  const [activeTab, setActiveTab] = useState(isDriver ? 'offered' : 'booked')
-  
-  // Update active tab when role changes
-  useEffect(() => {
-    setActiveTab(isDriver ? 'offered' : 'booked')
-  }, [isDriver])
+  const [driverActiveTab, setDriverActiveTab] = useState('offered')
+  const activeTab = isDriver ? driverActiveTab : 'booked'
 
-  useEffect(() => {
-    loadMyRides()
-  }, [user?.id, user?.role]) // Re-load when role changes
+  const loadRideForBooking = useCallback(async (booking) => {
+    const { data: ride } = await rideApi.get(`/api/rides/${booking.rideId}`)
+    return {
+      ...ride,
+      bookingId: booking.id,
+      bookingStatus: booking.status,
+      bookedSeats: booking.seats,
+      totalPrice: booking.totalPrice,
+      passengerId: booking.passengerId,
+    }
+  }, [])
 
-  const loadMyRides = async () => {
+  const loadMyRides = useCallback(async () => {
     if (!user?.id) return
 
     setIsLoading(true)
@@ -65,19 +69,13 @@ function MyRidesPage() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [isDriver, loadRideForBooking, user])
 
-  const loadRideForBooking = async (booking) => {
-    const { data: ride } = await rideApi.get(`/api/rides/${booking.rideId}`)
-    return {
-      ...ride,
-      bookingId: booking.id,
-      bookingStatus: booking.status,
-      bookedSeats: booking.seats,
-      totalPrice: booking.totalPrice,
-      passengerId: booking.passengerId,
-    }
-  }
+  useEffect(() => {
+    queueMicrotask(() => {
+      loadMyRides()
+    })
+  }, [loadMyRides])
 
   if (isLoading) {
     return (
@@ -113,7 +111,7 @@ function MyRidesPage() {
                   ? 'bg-[#2563eb] text-white shadow-sm'
                   : 'text-[#647590] hover:bg-slate-50'
               }`}
-              onClick={() => setActiveTab('offered')}
+              onClick={() => setDriverActiveTab('offered')}
               type="button"
             >
               Offered Rides ({offeredRides.length})
@@ -124,7 +122,7 @@ function MyRidesPage() {
                   ? 'bg-[#2563eb] text-white shadow-sm'
                   : 'text-[#647590] hover:bg-slate-50'
               }`}
-              onClick={() => setActiveTab('booked')}
+              onClick={() => setDriverActiveTab('booked')}
               type="button"
             >
               My Bookings ({bookedRides.length})

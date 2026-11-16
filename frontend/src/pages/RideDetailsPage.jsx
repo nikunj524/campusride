@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   AlertCircle,
@@ -28,11 +28,7 @@ function RideDetailsPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
-  useEffect(() => {
-    loadRideDetails()
-  }, [rideId])
-
-  const loadRideDetails = async () => {
+  const loadRideDetails = useCallback(async () => {
     setIsLoading(true)
     setError('')
     try {
@@ -43,7 +39,13 @@ function RideDetailsPage() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [rideId])
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      loadRideDetails()
+    })
+  }, [loadRideDetails])
 
   const handleAcceptRide = async () => {
     setError('')

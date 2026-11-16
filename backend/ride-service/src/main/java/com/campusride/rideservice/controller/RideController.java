@@ -46,7 +46,7 @@ public class RideController {
     }
 
     @PostMapping("/search")
-    public ResponseEntity<List<RideResponse>> searchRides(@RequestBody SearchRideRequest request, Authentication authentication) {
+    public ResponseEntity<List<RideResponse>> searchRides(@Valid @RequestBody SearchRideRequest request, Authentication authentication) {
         return ResponseEntity.ok(rideService.searchRides(request, currentUser(authentication)));
     }
 
@@ -56,6 +56,26 @@ public class RideController {
             @RequestParam Long passengerId,
             Authentication authentication) {
         return ResponseEntity.ok(rideService.acceptRide(rideId, passengerId, currentUser(authentication)));
+    }
+
+    @PostMapping("/{rideId}/reservations/{bookingId}")
+    public ResponseEntity<Void> reserveBookingSeats(
+            @PathVariable Long rideId,
+            @PathVariable Long bookingId,
+            @RequestParam Long passengerId,
+            @RequestParam Integer seats,
+            Authentication authentication) {
+        rideService.reserveBookingSeats(rideId, bookingId, passengerId, seats, currentUser(authentication));
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{rideId}/reservations/{bookingId}/release")
+    public ResponseEntity<Void> releaseBookingSeats(
+            @PathVariable Long rideId,
+            @PathVariable Long bookingId,
+            Authentication authentication) {
+        rideService.releaseBookingSeats(rideId, bookingId, currentUser(authentication));
+        return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{rideId}/start")

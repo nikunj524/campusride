@@ -54,6 +54,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PATCH, "/api/rides/*/start", "/api/rides/*/complete").hasRole("DRIVER")
                         .requestMatchers(HttpMethod.PATCH, "/api/rides/*/accept", "/api/rides/*/cancel")
                         .hasAnyRole("STUDENT", "DRIVER")
+                        .requestMatchers(HttpMethod.POST, "/api/rides/*/reservations/*").hasRole("DRIVER")
+                        .requestMatchers(HttpMethod.PATCH, "/api/rides/*/reservations/*/release")
+                        .hasAnyRole("STUDENT", "DRIVER")
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

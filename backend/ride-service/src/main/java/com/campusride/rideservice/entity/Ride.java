@@ -101,6 +101,25 @@ public class Ride {
         this.availableSeats = totalSeats - reservedSeats;
     }
 
+    public void reserveSeats(Integer seats) {
+        if (requiresCapacityReview()) {
+            throw new IllegalStateException("Ride capacity requires manual review before new reservations");
+        }
+        if (!hasCompleteAndConsistentCapacity() || seats == null || seats < 1 || seats > availableSeats) {
+            throw new IllegalArgumentException("Not enough seats available");
+        }
+        reservedSeats += seats;
+        availableSeats -= seats;
+    }
+
+    public void releaseSeats(Integer seats) {
+        if (!hasCompleteAndConsistentCapacity() || seats == null || seats < 1 || seats > reservedSeats) {
+            throw new IllegalArgumentException("Cannot release the requested seats");
+        }
+        reservedSeats -= seats;
+        availableSeats += seats;
+    }
+
     public boolean hasCompleteAndConsistentCapacity() {
         return totalSeats != null && reservedSeats != null && availableSeats != null
                 && totalSeats >= 0 && reservedSeats >= 0 && reservedSeats <= totalSeats

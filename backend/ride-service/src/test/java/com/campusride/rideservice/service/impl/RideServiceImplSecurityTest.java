@@ -1,4 +1,11 @@
-package com.campusride.rideservice.service.impl;
+echo "===== NORMAL DIFF ====="
+git -c core.autocrlf=false diff --stat HEAD
+
+echo "===== IGNORE LINE ENDINGS ====="
+git -c core.autocrlf=false diff --ignore-space-at-eol --stat HEAD
+
+echo "===== NEW FILES ====="
+git ls-files --others --exclude-standardpackage com.campusride.rideservice.service.impl;
 
 import com.campusride.rideservice.client.UserServiceClient;
 import com.campusride.rideservice.dto.CreateRideRequest;
@@ -6,6 +13,7 @@ import com.campusride.rideservice.entity.Ride;
 import com.campusride.rideservice.enums.RideStatus;
 import com.campusride.rideservice.enums.RideType;
 import com.campusride.rideservice.repository.RideRepository;
+import com.campusride.rideservice.repository.RideReservationRepository;
 import com.campusride.rideservice.security.AuthenticatedUser;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.access.AccessDeniedException;
@@ -22,8 +30,9 @@ import static org.mockito.Mockito.when;
 class RideServiceImplSecurityTest {
 
     private final RideRepository rideRepository = mock(RideRepository.class);
+    private final RideReservationRepository reservationRepository = mock(RideReservationRepository.class);
     private final UserServiceClient userServiceClient = mock(UserServiceClient.class);
-    private final RideServiceImpl rideService = new RideServiceImpl(rideRepository, userServiceClient);
+    private final RideServiceImpl rideService = new RideServiceImpl(rideRepository, reservationRepository, userServiceClient);
 
     @Test
     void rejectsRideCreationForAnotherDriverId() {

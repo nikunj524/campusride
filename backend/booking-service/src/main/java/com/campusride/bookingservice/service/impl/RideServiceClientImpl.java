@@ -50,10 +50,11 @@ public class RideServiceClientImpl implements RideServiceClient {
     }
 
     @Override
-    public void acceptRide(Long rideId, Long passengerId) {
+    public void reserveBookingSeats(Long rideId, Long bookingId, Long passengerId, Integer seats) {
         try {
-            String url = rideServiceUrl + "/api/rides/" + rideId + "/accept?passengerId=" + passengerId;
-            log.info("Accepting ride at: {}", url);
+            String url = rideServiceUrl + "/api/rides/" + rideId + "/reservations/" + bookingId
+                    + "?passengerId=" + passengerId + "&seats=" + seats;
+            log.info("Reserving seats for booking {} at: {}", bookingId, url);
             
             HttpHeaders headers = new HttpHeaders();
             HttpEntity<?> entity = new HttpEntity<>(headers);
@@ -65,10 +66,21 @@ public class RideServiceClientImpl implements RideServiceClient {
                     Void.class
             );
             
-            log.info("Ride {} accepted successfully for passenger {}", rideId, passengerId);
+            log.info("Reserved seats for booking {} on ride {}", bookingId, rideId);
         } catch (Exception e) {
-            log.error("Error accepting ride: {}", e.getMessage());
-            throw new RideNotAvailableException("Failed to accept ride: " + e.getMessage());
+            log.error("Error reserving seats: {}", e.getMessage());
+            throw new RideNotAvailableException("Failed to reserve seats: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void releaseBookingSeats(Long rideId, Long bookingId) {
+        try {
+            String url = rideServiceUrl + "/api/rides/" + rideId + "/reservations/" + bookingId + "/release";
+            restTemplate.exchange(url, HttpMethod.PATCH, new HttpEntity<>(new HttpHeaders()), Void.class);
+        } catch (Exception e) {
+            log.error("Error releasing seats: {}", e.getMessage());
+            throw new RideNotAvailableException("Failed to release seats: " + e.getMessage());
         }
     }
 }

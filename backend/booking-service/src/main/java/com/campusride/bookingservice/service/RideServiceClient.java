@@ -6,5 +6,7 @@ public interface RideServiceClient {
 
     RideResponse getRideById(Long rideId);
 
-    void acceptRide(Long rideId, Long passengerId);
+    void reserveBookingSeats(Long rideId, Long bookingId, Long passengerId, Integer seats);
+
+    void releaseBookingSeats(Long rideId, Long bookingId);
 }

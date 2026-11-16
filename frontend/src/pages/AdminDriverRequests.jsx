@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   AlertCircle,
   CheckCircle2,
@@ -14,21 +14,12 @@ import { userApi } from '../api/client'
 
 function AdminDriverRequests() {
   const [requests, setRequests] = useState([])
-  const [filteredRequests, setFilteredRequests] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [filter, setFilter] = useState('ALL')
   const [processingId, setProcessingId] = useState(null)
 
-  useEffect(() => {
-    loadRequests()
-  }, [])
-
-  useEffect(() => {
-    filterRequests()
-  }, [filter, requests])
-
-  const loadRequests = async () => {
+  const loadRequests = useCallback(async () => {
     setIsLoading(true)
     setError('')
     try {
@@ -39,15 +30,18 @@ function AdminDriverRequests() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
 
-  const filterRequests = () => {
-    if (filter === 'ALL') {
-      setFilteredRequests(requests)
-    } else {
-      setFilteredRequests(requests.filter(req => req.status === filter))
-    }
-  }
+  useEffect(() => {
+    queueMicrotask(() => {
+      loadRequests()
+    })
+  }, [loadRequests])
+
+  const filteredRequests = useMemo(
+    () => filter === 'ALL' ? requests : requests.filter((request) => request.status === filter),
+    [filter, requests]
+  )
 
   const handleApprove = async (requestId) => {
     if (!confirm('Are you sure you want to approve this driver request?')) return

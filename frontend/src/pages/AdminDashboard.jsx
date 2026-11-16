@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CheckCircle2, FileText, LoaderCircle, Users, XCircle } from 'lucide-react'
 import { userApi } from '../api/client'
@@ -13,11 +13,7 @@ function AdminDashboard() {
   })
   const [isLoading, setIsLoading] = useState(true)
 
-  useEffect(() => {
-    loadStats()
-  }, [])
-
-  const loadStats = async () => {
+  const loadStats = useCallback(async () => {
     setIsLoading(true)
     try {
       const { data } = await userApi.get('/api/admin/driver-requests')
@@ -32,7 +28,13 @@ function AdminDashboard() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      loadStats()
+    })
+  }, [loadStats])
 
   if (isLoading) {
     return (

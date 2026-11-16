@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   AlertCircle,
   Filter,
@@ -13,21 +13,12 @@ import { userApi } from '../api/client'
 
 function AdminUsers() {
   const [users, setUsers] = useState([])
-  const [filteredUsers, setFilteredUsers] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
   const [roleFilter, setRoleFilter] = useState('ALL')
 
-  useEffect(() => {
-    loadUsers()
-  }, [])
-
-  useEffect(() => {
-    filterUsers()
-  }, [roleFilter, searchTerm, users])
-
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     setIsLoading(true)
     setError('')
     try {
@@ -38,9 +29,15 @@ function AdminUsers() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
 
-  const filterUsers = () => {
+  useEffect(() => {
+    queueMicrotask(() => {
+      loadUsers()
+    })
+  }, [loadUsers])
+
+  const filteredUsers = useMemo(() => {
     let filtered = users
 
     // Filter by role
@@ -59,8 +56,8 @@ function AdminUsers() {
       )
     }
 
-    setFilteredUsers(filtered)
-  }
+    return filtered
+  }, [roleFilter, searchTerm, users])
 
   const getRoleCounts = () => {
     return {

@@ -9,7 +9,6 @@ import {
   LogOut,
   Menu,
   Search,
-  Settings,
   UserRound,
   Users,
   X,

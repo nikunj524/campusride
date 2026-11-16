@@ -57,9 +57,6 @@ public class BookingServiceImpl implements BookingService {
 
         booking = bookingRepository.save(booking);
 
-        // Update ride with passenger info via Ride Service
-        rideServiceClient.acceptRide(request.getRideId(), request.getPassengerId());
-
         log.info("Booking created successfully with ID: {}", booking.getId());
         return mapToResponse(booking);
     }
@@ -103,8 +100,24 @@ public class BookingServiceImpl implements BookingService {
         if (booking.getStatus() == BookingStatus.CANCELLED) {
             throw new InvalidBookingOperationException("Cannot update a cancelled booking");
         }
-
-        booking.setStatus(status);
+        if (status == BookingStatus.CONFIRMED) {
+            if (booking.getStatus() == BookingStatus.PENDING) {
+                rideServiceClient.reserveBookingSeats(
+                        booking.getRideId(), booking.getId(), booking.getPassengerId(), booking.getSeats());
+                booking.confirm();
+            } else if (booking.getStatus() != BookingStatus.CONFIRMED) {
+                throw new InvalidBookingOperationException("Only pending bookings can be confirmed");
+            }
+        } else if (status == BookingStatus.CANCELLED) {
+            if (booking.getStatus() == BookingStatus.CONFIRMED) {
+                rideServiceClient.releaseBookingSeats(booking.getRideId(), booking.getId());
+            }
+            booking.cancel();
+        } else if (status == BookingStatus.COMPLETED && booking.getStatus() == BookingStatus.CONFIRMED) {
+            booking.complete();
+        } else if (status != booking.getStatus()) {
+            throw new InvalidBookingOperationException("Unsupported booking status transition");
+        }
         booking = bookingRepository.save(booking);
 
         log.info("Booking {} status updated to {}", id, status);
@@ -128,11 +141,11 @@ public class BookingServiceImpl implements BookingService {
             throw new InvalidBookingOperationException("Booking is already cancelled");
         }
 
+        if (booking.getStatus() == BookingStatus.CONFIRMED) {
+            rideServiceClient.releaseBookingSeats(booking.getRideId(), booking.getId());
+        }
         booking.cancel();
         booking = bookingRepository.save(booking);
-
-        // Optionally notify Ride Service about cancellation
-        // rideServiceClient.cancelRide(booking.getRideId());
 
         log.info("Booking {} cancelled successfully", id);
         return mapToResponse(booking);

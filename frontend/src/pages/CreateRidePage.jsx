@@ -4,7 +4,6 @@ import {
   CalendarDays,
   CarFront,
   CheckCircle2,
-  Clock,
   IndianRupee,
   MapPin,
   Save,

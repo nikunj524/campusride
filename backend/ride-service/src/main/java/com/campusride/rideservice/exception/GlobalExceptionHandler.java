@@ -35,6 +35,11 @@ public class GlobalExceptionHandler {
         return response(HttpStatus.BAD_REQUEST, exception.getMessage(), Map.of());
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiError> handleBadRequest(IllegalArgumentException exception) {
+        return response(HttpStatus.BAD_REQUEST, exception.getMessage(), Map.of());
+    }
+
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiError> handleAccessDenied(AccessDeniedException exception) {
         return response(HttpStatus.FORBIDDEN, exception.getMessage(), Map.of());

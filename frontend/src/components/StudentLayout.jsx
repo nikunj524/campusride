@@ -28,6 +28,14 @@ const navigation = [
 function StudentLayout() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { user } = useAuth()
+  const navigate = useNavigate()
+  const [globalSearch, setGlobalSearch] = useState('')
+
+  const submitGlobalSearch = (event) => {
+    event.preventDefault()
+    const query = globalSearch.trim()
+    navigate(query ? `/rides/find?source=${encodeURIComponent(query)}` : '/rides/find')
+  }
 
   return (
     <div className="student-app">
@@ -36,10 +44,10 @@ function StudentLayout() {
       <div className="student-workspace">
         <header className="student-topbar">
           <button className="mobile-menu-button" aria-label="Open navigation" onClick={() => setIsMenuOpen(true)} type="button"><Menu size={21} /></button>
-          <label className="dashboard-search" aria-label="Ride search">
+          <form className="dashboard-search" aria-label="Ride search" onSubmit={submitGlobalSearch}>
             <Search size={18} aria-hidden="true" />
-            <input disabled placeholder="Search rides (from, to, campus)..." />
-          </label>
+            <input value={globalSearch} onChange={(event) => setGlobalSearch(event.target.value)} placeholder="Search rides by source..." />
+          </form>
           <div className="topbar-account">
             <button className="icon-button" aria-label="Notifications" type="button"><Bell size={19} /></button>
             <div className="account-avatar" aria-hidden="true">{getInitials(user)}</div>
@@ -71,26 +79,26 @@ function StudentSidebar({ isOpen, onNavigate }) {
         })
         const data = await response.json()
         setDriverRequestStatus(data?.status || null)
-      } catch (error) {
+      } catch {
         setDriverRequestStatus(null)
       }
     }
-    
+
     if (user?.role === 'STUDENT') {
       checkDriverRequest()
-      
+
       // Re-check when page becomes visible (user switches tabs/windows)
       const handleVisibilityChange = () => {
         if (!document.hidden) {
           checkDriverRequest()
         }
       }
-      
+
       document.addEventListener('visibilitychange', handleVisibilityChange)
-      
+
       // Also check periodically (every 30 seconds)
       const interval = setInterval(checkDriverRequest, 30000)
-      
+
       return () => {
         clearInterval(interval)
         document.removeEventListener('visibilitychange', handleVisibilityChange)
@@ -110,7 +118,7 @@ function StudentSidebar({ isOpen, onNavigate }) {
           })
           const data = await response.json()
           setDriverRequestStatus(data?.status || null)
-        } catch (error) {
+        } catch {
           setDriverRequestStatus(null)
         }
       }
@@ -161,13 +169,12 @@ function StudentSidebar({ isOpen, onNavigate }) {
   }
 
   const getButtonIcon = () => {
-    if (driverRequestStatus === 'PENDING') return Clock
-    if (driverRequestStatus === 'APPROVED') return Shuffle
-    if (driverRequestStatus === 'REJECTED') return X
-    return UserRound
+    if (driverRequestStatus === 'PENDING') return <Clock size={18} />
+    if (driverRequestStatus === 'APPROVED') return <Shuffle size={18} />
+    if (driverRequestStatus === 'REJECTED') return <X size={18} />
+    return <UserRound size={18} />
   }
 
-  const ButtonIcon = getButtonIcon()
 
   return (
     <aside className={`student-sidebar ${isOpen ? 'is-open' : ''}`}>
@@ -180,22 +187,22 @@ function StudentSidebar({ isOpen, onNavigate }) {
         ))}
       </nav>
       <div className="sidebar-divider" />
-      <button 
-        className="sidebar-link" 
+      <button
+        className="sidebar-link"
         onClick={handleSwitchToDriver}
         disabled={isSwitching || driverRequestStatus === 'REJECTED'}
         type="button"
         title={
-          driverRequestStatus === 'PENDING' 
-            ? 'Your request is pending approval' 
-            : driverRequestStatus === 'REJECTED' 
-            ? 'Your request was rejected. Contact support.' 
-            : driverRequestStatus === 'APPROVED'
-            ? 'Switch to driver mode'
-            : 'Apply to become a driver'
+          driverRequestStatus === 'PENDING'
+            ? 'Your request is pending approval'
+            : driverRequestStatus === 'REJECTED'
+              ? 'Your request was rejected. Contact support.'
+              : driverRequestStatus === 'APPROVED'
+                ? 'Switch to driver mode'
+                : 'Apply to become a driver'
         }
       >
-        <ButtonIcon size={18} />
+        {getButtonIcon()}
         {getButtonText()}
       </button>
       <div className="sidebar-bottom">

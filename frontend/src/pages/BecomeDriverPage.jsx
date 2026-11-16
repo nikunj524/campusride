@@ -48,7 +48,7 @@ function BecomeDriverPage() {
         const errorData = await response.json()
         setError(errorData.message || 'Failed to submit driver request.')
       }
-    } catch (err) {
+    } catch {
       setError('Unable to submit your request. Please try again.')
     } finally {
       setIsSubmitting(false)

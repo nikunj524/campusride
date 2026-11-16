@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import axios from 'axios'
 import {
   Bell,
@@ -30,11 +30,7 @@ function AdminSettings() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
-    fetchSettings()
-  }, [])
-
-  const fetchSettings = async () => {
+  const fetchSettings = useCallback(async () => {
     try {
       const token = localStorage.getItem('token')
       const response = await axios.get('http://localhost:8080/api/admin/settings', {
@@ -43,10 +39,16 @@ function AdminSettings() {
       if (response.data) {
         setSettings(response.data)
       }
-    } catch (err) {
+    } catch {
       console.log('Using default settings')
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      fetchSettings()
+    })
+  }, [fetchSettings])
 
   const handleSave = async (e) => {
     e.preventDefault()

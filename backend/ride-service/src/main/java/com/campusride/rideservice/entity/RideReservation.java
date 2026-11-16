@@ -69,4 +69,12 @@ public class RideReservation {
             Long rideId, Long bookingId, Long passengerId, Integer seats) {
         return new RideReservation(rideId, bookingId, passengerId, seats);
     }
+
+    public boolean isActive() {
+        return status == ReservationStatus.ACTIVE;
+    }
+
+    public void release() {
+        this.status = ReservationStatus.RELEASED;
+    }
 }
